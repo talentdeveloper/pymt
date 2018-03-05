@@ -10,7 +10,7 @@ const inputButtons = [
     [4, 5, 6],
     [7, 8, 9],
     ['', '0', 'Del']
-  
+
 ];
 export default class PinCreen extends Component {
 
@@ -31,11 +31,11 @@ export default class PinCreen extends Component {
 
     render() {
         return (
-          
+
             <View style={Style.rootContainer}>
-            <View>
+                <View>
                     <Text style={Style.textcenter} >Enter user pin</Text>
-            </View>
+                </View>
                 <View style={Style.displayContainer}>
                     {/* <TextInput
                         style={Style.displayText}                       
@@ -56,7 +56,7 @@ export default class PinCreen extends Component {
                     <Text style={{ color: '#fff' }} >Continue</Text>
                 </Button>
             </View>
-          
+
         );
     }
 
@@ -96,17 +96,17 @@ export default class PinCreen extends Component {
 
     _handleStringInput(str) {
         switch (str) {
-           
+
 
             case 'Del':
-               
+
                 inputValue = this.state.inputValue.substring(0, this.state.inputValue.length - 1);
                 // this.state.inputValue.lenght-1,
-                   
+
 
                 this.setState({
                     previousInputValue: 0,
-                        inputValue: inputValue,
+                    inputValue: inputValue,
                     selectedSymbol: null
                 });
                 break;

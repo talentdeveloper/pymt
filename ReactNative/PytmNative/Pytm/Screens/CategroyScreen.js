@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Container, Header, Content, Footer, FooterTab, Button, Text, Left, Icon, Body, Title, Right, Input, Item } from 'native-base';
+const SideMenu = require('react-native-side-menu');
 export default class FooterTabsExample extends Component {
     static navigationOptions = {
         header: null,
