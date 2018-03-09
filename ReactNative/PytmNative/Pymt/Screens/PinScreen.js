@@ -30,6 +30,7 @@ export default class PinCreen extends Component {
     }
 
     render() {
+        const { navigate } = this.props.navigation;
         return (
 
             <View style={Style.rootContainer}>
@@ -49,7 +50,7 @@ export default class PinCreen extends Component {
                     {this._renderInputButtons()}
                 </View>
                 <Button block
-                    onPress={() => { }}
+                    onPress={() => { navigate("MainScreen") }}
                     color="#187FD7"
                     style={{ margin: 20, backgroundColor: '#10d0a0' }}
                 >

@@ -20,7 +20,7 @@ export default class LoginScreen extends Component {
         <ScrollView style={{ paddingTop: 100, backgroundColor: '#fff'}}>
       <View style={styles.container}>
                 <View style={{ width: '100%' }}>
-                    <Text style={styles.title} >Pytm</Text>
+                    <Text style={styles.title} >Pymt</Text>
                 </View>
 
         <View style={styles.SectionStyle}>
@@ -46,7 +46,7 @@ export default class LoginScreen extends Component {
         </View>
 
         <Button block
-          onPress={() => { }}
+            onPress={() => { navigate("PinScreen") }}
           color="#187FD7"
                     style={{ margin: 10, backgroundColor:'#10d0a0' }}
         >

@@ -7,14 +7,19 @@ import OpenAmountScreen from './Screens/OpenAmountScreen';
 import CashdropAmmountScreen from './Screens/CashdropAmountScreen';
 import categoryScreen from './Screens/CategroyScreen';
 import MainScreen from './Screens/MainScreen';
+import ReciptScreen from './Screens/ReciptScreen';
+import SendReciptScreen from './Screens/SendReciptScreen';
 
 const navigation = StackNavigator({
-    MainScreen:{screen:MainScreen},
-    categoryScreen: { screen: categoryScreen},
-    CashdropAmmountScreen: { screen: CashdropAmmountScreen},
-    OpenAmountScreen: { screen: OpenAmountScreen},
-    PinScreen: { screen: PinScreen},
+  
     LoginScreen: { screen: LoginScreen },
+    PinScreen: { screen: PinScreen },
+    ReciptScreen: { screen: ReciptScreen },
+    SendReciptScreen: { screen: SendReciptScreen },
+    MainScreen: { screen: MainScreen },
+    categoryScreen: { screen: categoryScreen },
+    CashdropAmmountScreen: { screen: CashdropAmmountScreen },
+    OpenAmountScreen: { screen: OpenAmountScreen },
 
 
 });
