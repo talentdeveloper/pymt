@@ -41,8 +41,8 @@
                                                 <td><%= users.First_Name %></td>
                                                 <td><%= users.Last_Name %></td>
                                                 <td><%= users.Pin %></td>
-                                             <td><a href="/UerEdit/<%= users.userid %>"  class="btn btn-warning" id="edit" data-toggle="modal" data-target="#staticModal1" >Edit</a></td>
-                                             <td><a href="/userDeleted/<%= users.userid %>"  class="btn btn-warning"  >Delete</a></td>
+                                             <td><a href="javascript:void(0)" id="edit" class="btn btn-success" attr_id="<%= users.userid %>"   data-toggle="modal" data-target="#staticModal1" >Edit</a></td>
+                                             <td><a id="delete" href="javascript:void(0)" attr_id="<%= users.userid %>" class="btn btn-danger" >Delete</a></td>
                                             </tr>
                                          
                                         </tbody>
@@ -86,7 +86,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Save</button>   
+             <button type="submit" class="btn btn-primary">Save</button>       
                 </div>
             </form>
             </div>
@@ -102,31 +102,36 @@
     <div class="modal-dialog modal-sm" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="staticModalLabel">Edit <%= data.userid %> user</h5>
+                <h5 class="modal-title" id="staticModalLabel">Edit user</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
            
-                <form name="myform">
+                <form name="myform" method="post" action="/userUpdate">
                     <div class="modal-body">
                         <div class="form-group">
                             <label for="cc-payment"  class="control-label mb-1">First name</label>
-                            <input name="first_name" value="<%= data.First_Name %>"  id="first_name" type="text" class="form-control" aria-required="true" aria-invalid="false" >
+                            <input name="firstname"   id="firstname" type="text" class="form-control" aria-required="true" aria-invalid="false" >
                         </div>
                         <div class="form-group has-success">
                             <label for="cc-name" class="control-label mb-1">Last name</label>
-                            <input name="last_name" value="<%= data.Last_Name %>" id="last_name" type="text" class="form-control cc-name valid" data-val="true" data-val-required="Please enter the name on card" autocomplete="cc-name" aria-required="true" aria-invalid="false" aria-describedby="cc-name-error">
+                            <input name="lastname"  id="lastname" type="text" class="form-control cc-name valid" data-val="true" data-val-required="Please enter the name on card" autocomplete="cc-name" aria-required="true" aria-invalid="false" aria-describedby="cc-name-error">
                             <span class="help-block field-validation-valid" data-valmsg-for="cc-name" data-valmsg-replace="true"></span>
                         </div>
                         <div class="form-group">
                             <label for="cc-number" class="control-label mb-1">User pin</label>
-                            <input id="user_pin" value="<%= data.Pin %>" name="user_pin" type="tel" class="form-control cc-number identified visa" value="" data-val="true" data-val-required="Please enter the card number" data-val-cc-number="Please enter a valid card number" autocomplete="cc-number">
+                            <input id="userpin"  name="userpin" type="tel" class="form-control cc-number identified visa" value="" data-val="true" data-val-required="Please enter the card number" data-val-cc-number="Please enter a valid card number" autocomplete="cc-number">
                             <span class="help-block" data-valmsg-for="cc-number" data-valmsg-replace="true"></span>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <input id="userid" type="hidden" name="userid" type="tel" class="form-control cc-number identified visa" value="" data-val="true" data-val-required="Please enter the card number"
+                            data-val-cc-number="Please enter a valid card number" autocomplete="cc-number">
+                       
+                    </div>
                     <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Save</button>   
+                  <button type="submit" class="btn btn-primary">Save</button>    
                     </div>
                 </form>
 
@@ -134,4 +139,43 @@
         </div>
     </div>
 </div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+    $(document).on('click','#delete', function(){
+        var id = $(this).attr('attr_id');
+        var option = window.confirm("Are you sure to delete ?");
+        if(option ==  true){
+            $.ajax({
+                type:"GET",
+                url:"/userDelete/"+ id,
+                success: function(){
+                    location.reload();
+                }
+            });
+        }else{
+            console.log("Not deleted");
+        }
 
+    });
+    $(document).on('click','#edit', function(){
+        var id = $(this).attr('attr_id');
+       $.ajax({
+           type:"GET",
+           url:'/userEdit/'+id,
+           success:function(data){
+               var userid = data.data[0].userid;
+               var fname = data.data[0].First_Name;
+               var lname = data.data[0].Last_Name;
+               var pin = data.data[0].Pin;
+               $("#firstname").val(fname);
+               $("#lastname").val(lname);
+               $("#userpin").val(pin);
+               $("#userid").val(userid);
+            ;
+           }
+       })
+     });
+});
+
+</script>

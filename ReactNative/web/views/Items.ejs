@@ -54,7 +54,7 @@
                                         <td><%= items.image %></td>
                                         <td><%= items.barcode %></td>
                                         <td><%= items.modefier %></td>
-                                     <td> <a id ="delete" href="/itemDeleted/<%= items.itemid %>" class="btn btn-danger pull-right" style="margin-right:10px;background-color:crimson ;" >Delete</a></td>
+                                     <td> <a id ="delete" href="javascript:void(0)" attr_id="<%= items.itemid %>" class="btn btn-danger pull-right" style="margin-right:10px;background-color:crimson ;" >Delete</a></td>
                                      <td> <button  class="btn btn-danger pull-right" style="margin-right:10px;background-color:crimson ;" >Deactivate</button></td>
                                     </tr>
                                 
@@ -72,5 +72,27 @@
 
 </div><!-- /#right-panel -->
 <!-- Right Panel -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+    $(document).on('click','#delete',function(){
+        var id  = $(this).attr('attr_id');
+       var option = window.confirm("Are you sure to delete ?");
+       if(option == true){
+        $.ajax({
+            type:"GET",
+            url:'/itemDelete/'+id,
+            success: function(){
+                location.reload();
+            }
+        });
+       }else{
+           console.log("cancel deleted");
+       }
+    });
+});
+
+</script>
+
 
 

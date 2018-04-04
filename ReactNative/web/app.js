@@ -18,17 +18,6 @@ var Route = require('./controllers/Route');
 app.use(Route);
 
 
-
-
-
-
-
-
-
-
-
-
-
 app.listen(port, function(){
     console.log("Port is running", port);
 });
