@@ -65,7 +65,7 @@ export default class LoginScreen extends Component {
     );
   }
   usersignin() {
-    fetch('https://api.hungrytail.com/v1/login', {
+    fetch('https:///api/login', {
       method: 'POST',
       headers: {
         Accept: 'application/json',

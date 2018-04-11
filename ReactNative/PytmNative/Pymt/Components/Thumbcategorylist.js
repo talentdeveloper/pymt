@@ -6,7 +6,8 @@ import {
     ScrollView,
     View,
     Image,
-    TouchableHighlight
+    TouchableHighlight,
+    Alert
 
 } from 'react-native';
 
@@ -43,15 +44,7 @@ export default function Thumbcategorylist() {
     return (
         <ScrollView style={{ flex: 1, width: '100%', padding: 10 }}>
             <View style={styles.container}>
-                <TouchableHighlight style={styles.Card}>
-                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#fff' }} >A</Text>
-                </TouchableHighlight>
-                <TouchableHighlight style={styles.Card}>
-                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#fff' }} >B</Text>
-                </TouchableHighlight>
-                <TouchableHighlight style={styles.Card}>
-                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#fff' }} >C</Text>
-                </TouchableHighlight>
+                {categorylist()}
                
             </View>
             <View style={styles.container}>
@@ -94,3 +87,36 @@ export default function Thumbcategorylist() {
     );
 }
 
+
+function categorylist() {
+    try {
+        var api1 = 'http://localhost:3000/api/category';
+        fetch(api1)
+            .then((response) => response.json())
+            .then((responseJson) => {
+                alert(JSON.stringify(responseJson));
+                var catelist = [];
+                responseJson.data.map((cate) => {
+                    catelist.push(
+                        
+                        <TouchableHighlight style={styles.Card}>
+                            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#fff' }} >cate.CategoryName</Text>
+                        </TouchableHighlight>
+                      
+                    );
+                });
+                // for (w in this.state.wifiList) {
+
+                // }
+                return catelist;
+
+            })
+            .catch((e) => {
+  alert(e);
+            });
+    } catch (e) {
+        alert(e);
+        return false;
+    }
+  
+}
