@@ -7,7 +7,9 @@ import {
     View,
     Image,
     TouchableHighlight,
-    Alert
+    Alert,
+    AsyncStorage,
+    Platform
 
 } from 'react-native';
 
@@ -18,10 +20,10 @@ import { Container, Header, Content, Card, CardItem, Body, Text } from 'native-b
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        flexDirection:'row',
+        flexDirection: 'row',
         justifyContent: 'space-between',
         marginBottom: 20,
-      
+
 
     },
 
@@ -40,14 +42,22 @@ const styles = StyleSheet.create({
 
 });
 
-export default function Thumbcategorylist() {
+export default function Thumbcategorylist({catelist}) {
+var data=JSON.stringify(catelist);
+   
+    for (var yy in catelist)
+    {
+        alert(data.value);
+        alert(yy);
+    }
+   
     return (
         <ScrollView style={{ flex: 1, width: '100%', padding: 10 }}>
             <View style={styles.container}>
-                {categorylist()}
-               
+   
+
             </View>
-            <View style={styles.container}>
+            {/* <View style={styles.container}>
                 <TouchableHighlight style={styles.Card}>
                     <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#fff' }} >A</Text>
                 </TouchableHighlight>
@@ -58,8 +68,8 @@ export default function Thumbcategorylist() {
                     <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#fff' }} >C</Text>
                 </TouchableHighlight>
               
-            </View>
-            <View style={styles.container}>
+            </View> */}
+            {/* <View style={styles.container}>
                 <TouchableHighlight style={styles.Card}>
                     <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#fff' }} >A</Text>
                 </TouchableHighlight>
@@ -70,8 +80,8 @@ export default function Thumbcategorylist() {
                     <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#fff' }} >C</Text>
                 </TouchableHighlight>
                
-            </View>
-            <View style={styles.container}>
+            </View> */}
+            {/* <View style={styles.container}>
                 <TouchableHighlight style={styles.Card}>
                     <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#fff' }} >A</Text>
                 </TouchableHighlight>
@@ -82,41 +92,13 @@ export default function Thumbcategorylist() {
                     <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#fff' }} >C</Text>
                 </TouchableHighlight>
                
-            </View>
+            </View> */}
         </ScrollView>
     );
 }
 
 
-function categorylist() {
-    try {
-        var api1 = 'http://localhost:3000/api/category';
-        fetch(api1)
-            .then((response) => response.json())
-            .then((responseJson) => {
-                alert(JSON.stringify(responseJson));
-                var catelist = [];
-                responseJson.data.map((cate) => {
-                    catelist.push(
-                        
-                        <TouchableHighlight style={styles.Card}>
-                            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#fff' }} >cate.CategoryName</Text>
-                        </TouchableHighlight>
-                      
-                    );
-                });
-                // for (w in this.state.wifiList) {
+Thumbcategorylist.propTypes = {
+    catlist: PropTypes.func.isRequired,
+};
 
-                // }
-                return catelist;
-
-            })
-            .catch((e) => {
-  alert(e);
-            });
-    } catch (e) {
-        alert(e);
-        return false;
-    }
-  
-}

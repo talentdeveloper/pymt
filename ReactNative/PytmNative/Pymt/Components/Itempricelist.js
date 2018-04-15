@@ -42,46 +42,7 @@ export default function Thumbcategorylist() {
                             </TouchableHighlight>
                            
                         </ListItem>
-                        <ListItem>
-                            <Thumbnail round size={30} source={require('./../Screens/Images/apps.png')} />
-                            <Body>
-                                <Text>Hot Dog</Text>
-                                <Text note>$2.00</Text>
-                            </Body>
-                            <TouchableHighlight>
-                                <Text style={{ color: '#10d0a0', fontWeight: 'bold', fontSize: 22 }}>+</Text>
-                            </TouchableHighlight>
-                        </ListItem>
-                        <ListItem>
-                            <Thumbnail round size={30} source={require('./../Screens/Images/apps.png')} />
-                            <Body>
-                                <Text>Hot Dog</Text>
-                                <Text note>$2.00</Text>
-                            </Body>
-                            <TouchableHighlight>
-                                <Text style={{ color: '#10d0a0', fontWeight: 'bold', fontSize: 22 }}>+</Text>
-                            </TouchableHighlight>
-                        </ListItem>
-                        <ListItem>
-                            <Thumbnail round size={30} source={require('./../Screens/Images/apps.png')} />
-                            <Body>
-                                <Text>Hot Dog</Text>
-                                <Text note>$2.00</Text>
-                            </Body>
-                            <TouchableHighlight>
-                                <Text style={{ color: '#10d0a0', fontWeight: 'bold', fontSize: 22 }}>+</Text>
-                            </TouchableHighlight>
-                        </ListItem>
-                        <ListItem>
-                            <Thumbnail round size={30} source={require('./../Screens/Images/apps.png')} />
-                            <Body>
-                                <Text>Hot Dog</Text>
-                                <Text note>$2.00</Text>
-                            </Body>
-                            <TouchableHighlight>
-                                <Text style={{ color: '#10d0a0', fontWeight: 'bold', fontSize: 22 }}>+</Text>
-                            </TouchableHighlight>
-                        </ListItem>
+                       
                     </List>
                 </Content>
             </Container>

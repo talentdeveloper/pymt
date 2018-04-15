@@ -5,15 +5,18 @@ import {
   View,
   Image,
   TouchableOpacity,
+  TouchableHighlight,
+  ScrollView
 } from 'react-native';
 import SideMenu from 'react-native-side-menu';
 import Menu from './SideMenu/MenuScreen';
 import  Categorylst  from './../Components/CategoryList';
-import ThumbCategorylst from './../Components/Thumbcategorylist';
+// import ThumbCategorylst from './../Components/Thumbcategorylist';
 import Itemcategorylist from './../Components/Itempricelist';
 import Itemtotal from './../Components/ItemTotal';
 const image = require('./Images/airplane.png');
 import { Container, Header, Content, Footer, FooterTab, Button, Left, Icon, Body, Title, Right, Input, Item } from 'native-base';
+
 const styles = StyleSheet.create({
   button: {
     position: 'absolute',
@@ -41,6 +44,30 @@ const styles = StyleSheet.create({
     color: '#333333',
     marginBottom: 5,
   },
+  catcontainer: {
+    flex: 1,
+    flexDirection: 'row',
+    // justifyContent: 'space-between',
+    marginBottom: 20,
+    flexWrap: 'wrap',
+
+
+
+  },
+
+  catCard: {
+    padding: 20,
+    marginRight: 5,
+    backgroundColor: '#78aef9',
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: '#fff',
+    width: '30%',
+    height: 100,
+    marginBottom: 10
+
+  },
+  
 });
 
 export default class Basic extends Component {
@@ -51,12 +78,20 @@ export default class Basic extends Component {
     super(props);
 
     this.toggle = this.toggle.bind(this);
+    this.funcategorylist = this.funcategorylist.bind(this);
+    this.funItemlist = this.funItemlist.bind(this);
 
     this.state = {
       isOpen: false,
       selectedItem: 'About',
+      listcat:[],
+      itemlistprice:[]
     };
   }
+componentDidMount()
+{
+  this.funcategorylist();
+}
 
   toggle() {
     this.setState({
@@ -72,6 +107,46 @@ export default class Basic extends Component {
       isOpen: false,
       selectedItem: item,
     });
+
+ funcategorylist() {
+   var catelist = [];
+  try {
+    var api1 = 'http://pymtpos.com/api/category';
+    fetch(api1)
+      .then((response) => response.json())
+      .then((responseJson) => {      
+     
+        this.setState({ listcat: responseJson.data});
+
+      })
+      .catch(() => {
+
+      });
+  } catch (e) {
+   
+  }
+}
+
+  funItemlist(catid) {
+    var catelist = [];
+    try {
+      var api1 = 'http://pymtpos.com/api/item';
+      fetch(api1)
+        .then((response) => response.json())
+        .then((responseJson) => {
+
+          this.setState({ itemlistprice: responseJson.data });
+
+        })
+        .catch(() => {
+
+        });
+    } catch (e) {
+
+    }
+  }
+
+
   RenderPage() {
     switch (this.state.selectedItem)
     {
@@ -83,7 +158,27 @@ export default class Basic extends Component {
       }
       case 'transaction':
         {
-          return (<ThumbCategorylst></ThumbCategorylst>);
+      
+          var boxlit=[];
+          var boxcount=0;
+          this.state.listcat.map(function (item) {            
+              boxlit.push(
+
+                <TouchableHighlight style={styles.catCard} onPress={() => { alert(item["CategoryID"]) }}  >
+                  <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#fff' }} >{item["CategoryName"]}</Text>
+                </TouchableHighlight>
+              );         
+          })
+
+         
+          return (
+            <ScrollView style={{ flex: 1, width: '100%', padding: 10 }}>
+              <View style={styles.catcontainer}>
+                {boxlit}
+              </View>
+            
+            </ScrollView>
+          );
         }
       case 'cash':
         {
@@ -109,8 +204,46 @@ export default class Basic extends Component {
         {
           break;
         }
+      case 'itemprice':
+        {
+          var pricelit = [];
+       
+          this.state.itemlistprice.map(function (item) {
+            pricelit.push(
+              <ListItem>
+                <Thumbnail round size={30} source={require('./../Screens/Images/apps.png')} />
+                <Body>
+                  <Text>{item["item_name"]}</Text>
+                  <Text note>${item["price"]}</Text>
+
+                </Body>
+                <TouchableHighlight>
+                  <Text style={{ color: '#10d0a0', fontWeight: 'bold', fontSize: 22 }}>+</Text>
+                </TouchableHighlight>
+
+              </ListItem>
+
+            );
+          })
+
+
+          return (
+            <ScrollView style={{ flex: 1, width: '100%', padding: 10 }}>
+              <Container>
+
+                <Content>
+                  <List>
+                    {pricelit}
+
+                  </List>
+                </Content>
+              </Container>
+            </ScrollView>
+          );
+        }
     }
   }
+
 
   render() {
     const menu = <Menu onItemSelected={this.onMenuItemSelected} />;

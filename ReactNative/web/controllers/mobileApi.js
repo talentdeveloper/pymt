@@ -27,6 +27,77 @@ router.get('/addItem', function (req, res) {
 });
 
 /***********************************************************************************************************************/
+router.post('/signup', function(req,res){
+    var first_name = req.body.first_name;
+    var last_name = req.body.last_name;
+    var email = req.body.email;
+    var password = req.body.password;
+    var pin = req.body.userpin;
+    var sql = "INSERT INTO users(First_Name,Last_Name,email,password,Pin) VALUES("
+        + "'" + first_name + "'" + "," + "'" + last_name + "'" + "," + "'" + email + "'" + "," + "'" + password + "'" + "," + "'" + pin+ "'" + 
+         ")";
+    connection.query(sql,function(err,result){
+        if(!err){
+            res.status(200).json({
+                success:true,
+                message:"Succcessfully signup.",
+                data:result
+            });
+        }else{
+            res.status(500).json({
+                success: false,
+                message: " Internal error.",
+                data: err
+            });
+
+        }
+    });
+});
+/***********************************************************************************************************************/
+router.post('/login', function (req, res) {
+    var email = req.body.email;
+    var password = req.body.password;
+    connection.query('SELECT * FROM users WHERE email = ?', [email], function (error, results, fields) {
+        if (error) {
+            res.json({
+                status: false,
+                message: 'there are some error with query'
+            })
+        } else {
+            if (results.length > 0) {
+                if (password == results[0].password) {
+                    var payload = { result: results[0] };
+                    var token = jwt.sign(payload, config.secret, {
+                        expiresIn: 5000
+                    });
+                    res.status(200).json({
+                        success: true,
+                        message: 'Login successfully',
+                        data: results,
+                        status: 200
+                    });
+                } else {
+                    res.status(403).json({
+                        success: false,
+                        message: 'Incorrect password.',
+                        status: 403
+                    });
+                }
+
+            }
+            else {
+                res.status(403).json({
+                    success: false,
+                    message: 'Incorrect email.',
+                    status: 403
+                });
+            }
+        }
+    });
+});
+
+
+/***********************************************************************************************************************/
 router.get('/category', function (req, res) {
     var sql = "SELECT * FROM category"
     connection.query(sql, function (err, result) {
@@ -46,6 +117,51 @@ router.get('/category', function (req, res) {
 
         }
     });                                                                                                                             
+});
+/***********************************************************************************************************************/
+router.get('/getItemByCategory/:id', function (req, res) {
+    var id = req.params.id;
+    var sql = "SELECT * FROM items WHERE category =" + id;
+    connection.query(sql, function (err, result) {
+        if (result) {
+            res.status(200).json({
+                success: true,
+                message: 'Data.',
+                data: result,
+                state: 200
+
+            });
+        } else {
+            res.status(403).json({
+                success: false,
+                message: 'No data found',
+                status: 403
+            });
+        }
+    });
+});
+
+/***********************************************************************************************************************/
+router.get('/getItem/:id', function (req, res) {
+    var id = req.params.id;
+    var sql = "SELECT * FROM items WHERE itemid =" + id;
+    connection.query(sql, function (err, result) {
+        if (result) {
+            res.status(200).json({
+                success: true,
+                message: 'Data.',
+                data: result,
+                state: 200
+
+            });
+        } else {
+            res.status(403).json({
+                success: false,
+                message: 'No data found',
+                status: 403
+            });
+        }
+    });
 });
 /***********************************************************************************************************************/
 router.get('/getCategory/:id', function (req, res) {
@@ -235,6 +351,71 @@ router.post('/transaction', function (req, res) {
 
 });
 
+/***********************************************************************************************************************/
+//cardlist
+
+router.post('/userCardAdd', function(req,res){
+    var userid = req.body.userid;
+    var cardname = req.body.cardname;
+    var cbcno = req.body.cbcno;
+    var createdAt = req.body.createdAt;
+    var updatedAt = req.body.updatedAt;
+   var add = new Promise(function(resolve,reject){
+       var sql = "INSERT INTO usercard(userid,cardname,cbcno,createdAt,updatedAt) VALUES("
+           + "'" +userid + "'" + "," + "'" + cardname + "'" + "," + "'" + cbcno + "'" + "," + "'" + createdAt + "'" + ","
+           + "'" + updatedAt + "'" + ")";
+           connection.query(sql,function(err,data){
+               if(err){
+                   reject(err);
+               }else{
+                   resolve(data);
+               }
+           });
+   });
+  add.then(function(data){   //call of promieses.
+      res.status(200).json({
+          success:true,
+          message:'Saved successfully',
+          data:data,
+      });
+  }).catch(function(exception){
+      res.status(500).json({
+          success:false,
+          message:'Internal error',
+          data:exception
+      });
+  })
+
+});
+/***********************************************************************************************************************/
+//get item by transaction
+router.get('/getItemByTransaction/:id', function(req,res){
+    var transactionid = req.params.id;
+    var itemid = req.body.itemid;
+    var getItem = new Promise(function(resolve,reject){
+        var sql = "SELECT * FROM WHERE transactionid="+id;
+        connection.query(sql,function(err,data){
+           if(err){
+               reject(err);
+           } else{
+               resolve(data);
+           }
+        });
+    });
+    getItem.then(function(data){
+        res.status(200).json({
+            success:true,
+            message:"List of items",
+            data:data
+        });
+    }).catch(function(exception){
+        res.status(500).json({
+            success:false,
+            message:"Internal error occurred",
+            data:exception
+        });
+    })
+});
 
 /***********************************************************************************************************************/
 router.post('/updateCategory', function (req, res) {
@@ -285,48 +466,7 @@ router.post('/AddCategory', function (req, res) {
     });
 });
 
-/***********************************************************************************************************************/
-router.post('/login', function (req, res) {
-    var email = req.body.email;
-    var password = req.body.password;
-    connection.query('SELECT * FROM users WHERE email = ?', [email], function (error, results, fields) {
-        if (error) {
-            res.json({
-                status: false,
-                message: 'there are some error with query'
-            })
-        } else {
-            if (results.length > 0) {
-                if (password == results[0].password) {
-                    var payload = { result: results[0] };
-                    var token = jwt.sign(payload, config.secret, {
-                        expiresIn: 5000
-                    });
-                    res.status(200).json({
-                        success: true,
-                        message: 'Login successfully',
-                        data:results,
-                        status: 200
-                    });
-                } else {
-                    res.status(403).json({
-                        success: false,
-                        message: 'Incorrect password.',
-                        status: 403
-                    });
-                }
 
-            }
-            else {
-                res.status(403).json({
-                    success: false,
-                    message: 'Incorrect email.',
-                    status: 403
-                });
-            }
-        }
-    });
-});
 /***********************************************************************************************************************/
 router.post('/forgotPassword', function (req, res) {
     var email = req.body.useremail;

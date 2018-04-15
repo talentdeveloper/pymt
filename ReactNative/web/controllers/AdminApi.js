@@ -11,13 +11,13 @@ var jwt = require('jsonwebtoken');
 var storage = multer.diskStorage({
     destination: function (req, file, callback) {
         console.log("working1");
-        callback(null, '../uploads');
+        callback(null, './uploads/');
     },
     filename: function (req, file, callback) {
         callback(null, file.fieldname + '-' + Date.now());
     }
 });
-var upload = multer({ storage: storage }).array('userPhoto', 2);
+var upload = multer({ storage: storage }).single('userPhoto');
 /***********************************************************************************************************************/
 router.get('/',function(req, res){
     res.render('index', { layout: false });
@@ -292,8 +292,8 @@ router.post('/addItem',upload,function(req,res, next){
     var stock = req.body.stock;
     var barcode = req.body.barcode;
     var modifier = req.body.modifier;
-     var image = '';
-    console.log("image name". image);
+     var image = req.file.path;
+    console.log("image name", image);
    var sql = "INSERT INTO items(item_name,category,description, price,stock,image, barcode,modifier) VALUES("+"'"+item_name
     +"'"+","+"'"+category+"'"+","+"'"+description+"'"+","+"'"+price+"'"+","+"'"+stock+"'"+","+"'"+image+"'"+","+"'"+barcode+"'"+","+"'"+modifier+"'"+")";
     connection.query(sql, function(err,result){
@@ -301,6 +301,10 @@ router.post('/addItem',upload,function(req,res, next){
             res.redirect('/items');
         }
     });   
+});
+router.post('/upload',upload, function(req,res){
+    res.send("uploaded");
+
 });
 
 /***********************************************************************************************************************/
