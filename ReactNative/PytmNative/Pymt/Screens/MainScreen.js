@@ -130,7 +130,7 @@ componentDidMount()
   funItemlist(catid) {
     var catelist = [];
     try {
-      var api1 = 'http://pymtpos.com/api/item';
+      var api1 = 'http://pymtpos.com/api/getItemByCategory/'+catid;
       fetch(api1)
         .then((response) => response.json())
         .then((responseJson) => {
@@ -164,7 +164,12 @@ componentDidMount()
           this.state.listcat.map(function (item) {            
               boxlit.push(
 
-                <TouchableHighlight style={styles.catCard} onPress={() => { alert(item["CategoryID"]) }}  >
+                <TouchableHighlight style={styles.catCard} onPress={() => { 
+                  var catid = item["CategoryID"];
+                  this.funItemlist(catid);
+                  this.setState({ selectedItem:'itemprice'});
+                  this.RenderPage();
+                }}  >
                   <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#fff' }} >{item["CategoryName"]}</Text>
                 </TouchableHighlight>
               );         

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import _title from './../Components/_title'
 
-import { AppRegistry, StyleSheet, TextInput, View, Image, TouchableOpacity, Text,ScrollView } from 'react-native';
+import { AppRegistry, StyleSheet, TextInput, View, Image, TouchableOpacity, Text,ScrollView, Alert } from 'react-native';
 import {Button } from 'native-base';
 export default class LoginScreen extends Component {
 
@@ -65,7 +65,7 @@ export default class LoginScreen extends Component {
     );
   }
   usersignin() {
-    fetch('https:///api/login', {
+    fetch('http://pymtpos.com/api/login', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -77,7 +77,13 @@ export default class LoginScreen extends Component {
       }),
     }).then((response) => response.json())
       .then((responseJson) => {
-        return responseJson.movies;
+        if (responseJson.success==true)
+        {
+          this.props.navigate.navigation("PinScreen");
+        }else
+        {
+          alert('Please check your username and password');
+        }
       })
       .catch((error) => {
         console.error(error);
