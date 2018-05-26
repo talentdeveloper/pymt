@@ -41,32 +41,35 @@ router.get('/addItem', function (req, res) {
 
 /***********************************************************************************************************************/
 router.get('/category', function (req, res) {
-    var sql = "SELECT * FROM category"
-    connection.query(sql, function (err, result) {
-        if (result) {
-            res.render('pages/category', { data: result });
-        }
-    });
+  var { getAllCategory } = require('../helper/category')
+  getAllCategory((err, result) => {
+    if(err) return res.render('pages/error', { error: data.message });
+    return res.render('pages/category', { data: result });
+  })
 });
 /***********************************************************************************************************************/
 router.get('/getCategory/:id', function (req, res) {
     var id = req.params.id;
-    var sql = "SELECT * FROM category WHERE CategoryID =" + id;
-    connection.query(sql, function (err, result) {
-        if (result) {
-            res.status(200).json({
-                success: true,
-                data: result,
-                state: 200
-
-            });
-        }
-    });
+    var { editCategory } = require('../helper/category')
+    editCategory(id, (err, result) => {
+      if(err) return res.status(500).json({
+        success: false,
+        message: err.message,
+        status: 500
+      })
+      return res.status(200).json({
+        success: true,
+        message: 'Category by id',
+        data: result[0],
+        status: 200
+      })
+    })
 });
 /***********************************************************************************************************************/
 router.get('/dashboard', function (req, res) {
   console.log('---------------- loggedin jwt user ------------')
   console.log(req.cookies.jwtToken)
+  console.log(jwt.verify(req.cookies.jwtToken, config.secret))
   res.render('pages/dashboard');
 });
 /***********************************************************************************************************************/
@@ -226,35 +229,50 @@ router.post('/transaction', function (req, res) {
 
 /***********************************************************************************************************************/
 router.post('/updateCategory',  function(req,res){
-    var id = req.body.user_id;
-    console.log(id);
-    var categoryname = req.body.categoryname;
-    console.log(categoryname);
-    var categorycolor = req.body.categorycolor;
-    console.log(categorycolor);
-    var categoryicon = req.body.categoryicon;
-    console.log(categoryicon);
-    var sql = "UPDATE category SET CategoryName =" + "'" + categoryname+ "'" + "," + "CategoryColor=" + "'" + categorycolor + "'" + "," + "CategoryIcon=" + "'" + categoryicon + "'" + "WHERE CategoryID="  +"'"+ id + "'";
-    connection.query(sql, function (err, result) {
-        if (err) {
-            res.send(err);
-        } else {
-            res.redirect('/category');
-        }
-    });
+  var jwtToken = req.cookies.jwtToken
+  if(!jwtToken) return res.render('pages/error', { layout: false, error: 'Unauthorized user' })
+  var currentUser = jwt.verify(jwtToken, config.secret)
+  var { getAccountIdByUserId } = require('../helper/user')
+  getAccountIdByUserId(currentUser.sub, (err, result) => {
+    if(err) return res.render('pages/error', { error: err.message })
+    var category = {
+      id: req.body.category_id,
+      name: req.body.category_name,
+      short_name: req.body.category_name.substr(0, 2),
+      color: req.body.category_color,
+      image: req.body.category_icon && req.body.category_icon.replace(/^data:image\/([a-z]+);base64,/, ''),
+      active: req.body.active,
+      account_id: result[0].account_id
+    }
+    var { updateCategory } = require('../helper/category')
+    updateCategory(category, (err, result)=>{
+      if(err) return res.render('pages/error', { error: err.message })
+      return res.redirect('/category');
+    })
+  })
 });
 /***********************************************************************************************************************/
 router.post('/AddCategory',  function(req,res) {
-    var category_name = req.body.category_name;
-    var category_color = req.body.category_color;
-    var category_icon = req.body.category_icon;
-    var sql = "INSERT INTO category(CategoryName,CategoryColor,CategoryIcon) VALUES("+"'"+category_name+"'"+","+"'"+category_color
-    +"'"+","+"'"+category_icon+"'"+")";
-    connection.query(sql,function(err, result){
-        if(result){
-             res.redirect('/category');
-        }
-    });
+  var jwtToken = req.cookies.jwtToken
+  if(!jwtToken) return res.render('pages/error', { layout: false, error: 'Unauthorized user' })
+  var currentUser = jwt.verify(jwtToken, config.secret)
+  var { getAccountIdByUserId } = require('../helper/user')
+  getAccountIdByUserId(currentUser.sub, (err, result) => {
+    if(err) return res.render('pages/error', { error: err.message })
+    var category = {
+      name: req.body.category_name,
+      short_name: req.body.category_name.substr(0, 2),
+      color: req.body.category_color,
+      image: req.body.category_icon && req.body.category_icon.replace(/^data:image\/([a-z]+);base64,/, ''),
+      active: req.body.active,
+      account_id: result[0].account_id
+    }
+    var { createCategory } = require('../helper/category')
+    createCategory(category, (err, result)=>{
+      if(err) return res.render('pages/error', { error: err.message })
+      return res.redirect('/category');
+    })
+  })
 });
 
 /***********************************************************************************************************************/
