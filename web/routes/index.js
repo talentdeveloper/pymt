@@ -1,19 +1,10 @@
 var express = require('express');
 var router = express.Router();
 
-/* GET home page. */
-// router.get('/', function(req, res, next) {
-//   res.render('pages/login', { title: 'Express' });
-// });
-//
-// router.get('/dashboard', function(req, res, next) {
-//   res.render('pages/dashboard', { title: 'Dashboard', loggedInUser: {name: 'Boyer'} });
-// });
+var adminApi = require('./adminApi');
+router.use(adminApi);
 
-var AdminApi = require('./adminApi');
-router.use(AdminApi);
-
-var MobileApi = require('./mobileApi');
-router.use('/api',MobileApi);
+var mobileApi = require('./mobileApi');
+router.use(mobileApi);
 
 module.exports = router;
