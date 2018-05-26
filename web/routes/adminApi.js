@@ -100,6 +100,9 @@ router.get('/users', function (req, res) {
   var token = require('../helper').token;
   if(!token) return res.send('No token exists in server')
 
+  var { getAccountNames } = require('../helper/account')
+  var { getUserRoles } = require('../helper/user')
+
   var args = {
     headers: {
       "Content-Type": "application/json",
@@ -109,21 +112,30 @@ router.get('/users', function (req, res) {
   var url = config.audience + 'users'
   client.get(url, args, function (data, response) {
     // parsed response body as js object
-    console.log('------------------------- response body -------------------')
+    console.log('------------------------- user list response body -------------------')
     console.log(data);
     var users = []
     if(data && data.length) {
        users = data.map(user => ({
-         userid: user.user_id,
-         First_Name: user.given_name,
-         Last_Name: user.family_name,
-         Pin: (user.user_metadata && user.user_metadata.user_pin) || ''
+         account_id: (user.user_metadata && user.user_metadata.account_id) || '',
+         user_id: user.user_id,
+         auth0_user_id: user.user_id,
+         first_name: user.given_name,
+         last_name: user.family_name,
+         pin: (user.user_metadata && user.user_metadata.pin) || ''
       }))
     } else if (data && data.error) {
-      return res.render('pages/error', { layout: false, error: data.error_description });
+      return res.render('pages/error', { error: data.error_description || data.message });
     }
-    return res.render('pages/users', { data: users });
-  });
+
+    getAccountNames((err, accounts) => {
+      if(err) return res.render('pages/error', { error: err.message });
+      getUserRoles((err, roles) => {
+        if(err) return res.render('pages/error', { error: data.message });
+        return res.render('pages/users', { data: users, accounts: accounts, roles: roles });
+      })
+    })
+  })
 });
 /***********************************************************************************************************************/
 router.get('/itemDelete/:id', function (req, res) {
@@ -139,38 +151,59 @@ router.get('/itemDelete/:id', function (req, res) {
 /***********************************************************************************************************************/
 router.get('/userEdit/:id', function (req, res) {
     var id = req.params.id;
-    var sql = "SELECT * FROM users WHERE userid =" + id;
-    connection.query(sql, function (err, result) {
-        if (result) {
-            res.status(200).json({
-                success: true,
-                data: result,
-                state: 200
-            });
-        }
-    });
+    var { editUser } = require('../helper/user')
+    editUser(id, (err, result) => {
+      if(err) return res.status(500).json({
+        success: false,
+        message: err.message,
+        status: 500
+      })
+      return res.status(200).json({
+        success: true,
+        message: 'User by id',
+        data: result[0],
+        status: 200
+      })
+    })
 });
 /***********************************************************************************************************************/
 router.get('/userDelete/:id', function (req, res) {
     var id = req.params.id;
-    var sql = "DELETE FROM users WHERE userid=" + id;
-    connection.query(sql, function (err, result) {
-        if (result) {
-            res.redirect('/users');
-        }
+    var token = require('../helper').token;
+
+    if(!token) {
+      return res.send('No token exists in server')
+    }
+
+    var args = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token.access_token
+      }
+    }
+    var url = config.audience + 'users/' + id
+    client.delete(url, args, function (data, response) {
+      if(data && !data.error) return res.render('pages/error', { error: data.error_description || data.message })
+      else {
+        var { deleteUser } = require('../helper/user')
+        deleteUser(id, (err, result) => {
+          if(err) return res.render('pages/error', { error: err.message })
+          return res.redirect('/users');
+        })
+      }
     });
 });
 /***********************************************************************************************************************/
 // Transaction
 router.post('/transaction', function (req, res) {
     var itemid = req.body.itemid;
-    var userid = req.body.userid;
+    var user_id = req.body.user_id;
     var paymentby = req.body.paymentby;
     var revenue = req.body.revenue;
     var date = req.body.date;
     var status = req.body.status;
-    var sql = "INSERT INTO transactions(itemid,userid,paymentby,revenue,date,status) VALUES("
-        + "'" + itemid + "'" + "," + "'" + userid + "'" + "," + "'" + paymentby + "'" + "," + "'" + revenue + "'" + "," + "'" + date + "'" + ","
+    var sql = "INSERT INTO transactions(itemid,user_id,paymentby,revenue,date,status) VALUES("
+        + "'" + itemid + "'" + "," + "'" + user_id + "'" + "," + "'" + paymentby + "'" + "," + "'" + revenue + "'" + "," + "'" + date + "'" + ","
         + "'" + status + "'" + ")";
     connection.query(sql, function (err, result) {
         if (result) {
@@ -266,14 +299,14 @@ router.post('/login',function(req,res){
                 expiresIn: 5000
             });
             res.cookie('jwtToken', token, { maxAge: 900000, httpOnly: true });
-            res.redirect('dashboard?token=' + token);
+            res.redirect('dashboard');
           } else {
-            res.render('pages/error', { layout: false, error: profile.error });
+            res.render('pages/error', { error: profile.error });
           }
         });
 
       } else {
-        res.render('pages/error', { layout: false, error: data.error_description });
+        res.render('pages/error', { error: data.error_description || data.message });
       }
     });
 });
@@ -306,57 +339,78 @@ router.post('/updatePassword', (req,res)=>{
 
 /***********************************************************************************************************************/
 router.post('/UserDataInserted', function(req,res){
-  var userId= req.body.userId;
-    var firstName = req.body.firstName;
-    var lastName = req.body.lastName;
-    var token = require('../helper').token;
+  var user_id= req.body.userId;
+  var first_name = req.body.firstName;
+  var last_name = req.body.lastName;
+  var token = require('../helper').token;
 
-    if(!token) {
-      return res.send('No token exists in server')
-    }
+  if(!token) {
+    return res.send('No token exists in server')
+  }
 
-    var args = {
-      data: {
-        "user_id": userId,
-        "connection": config.auth0_connection,
-        "name": firstName+ " " + lastName,
-        "given_name": firstName,
-        "family_name": lastName,
-        "email": req.body.email,
-        "password": req.body.password,
-        "user_metadata": {
-          "pin": req.body.pin,
-          "isAdmin": req.body.isAdmin
-        },
-        "email_verified": false,
-        "verify_email": false,
-        "app_metadata": {}
+  var user = {
+    first_name: first_name,
+    last_name: last_name,
+    email: req.body.email,
+    password: req.body.password,
+    pin: req.body.pin,
+    role_id: req.body.role_id,
+    account_id: req.body.account_id
+  }
+
+  var args = {
+    data: {
+      "user_id": user_id,
+      "connection": config.auth0_connection,
+      "name": first_name+ " " + last_name,
+      "given_name": first_name,
+      "family_name": last_name,
+      "email": user.email,
+      "password": user.password,
+      "user_metadata": {
+        "pin": user.pin,
+        "role_id": user.role_id,
+        "account_id": user.account_id
       },
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + token.access_token
-      }
+      "email_verified": false,
+      "verify_email": false,
+      "app_metadata": {}
+    },
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token.access_token
     }
-    var url = config.audience + 'users'
-    client.post(url, args, function (data, response) {
-      // parsed response body as js object
-      console.log('------------------------- response body -------------------')
-      console.log(data);
-      if(data && !data.error) {
-        return res.redirect('/users');
-      } else {
-        return res.render('pages/error', { layout: false, error: data.error_description })
-      }
-    });
+  }
+  var url = config.audience + 'users'
+  client.post(url, args, function (data, response) {
+    // parsed response body as js object
+    console.log('------------------------- response body -------------------')
+    console.log(data);
+    if(data && !data.error) {
+      var { createUser } = require('../helper/user')
+      user.auth0_user_id = data.user_id
+
+      createUser(user, (err, result) => {
+        if(err) return res.render('pages/error', { error: err.message })
+        else {
+          if(err) return res.render('pages/error', { error: err.message })
+          return res.redirect('/users');
+        }
+      })
+
+    } else {
+      return res.render('pages/error', { error: data.error_description || data.message })
+    }
+  });
 });
 /***********************************************************************************************************************/
 router.post('/userUpdate', function(req,res) {
-  var user_id= req.body.userid;
+  var user_id= req.body.user_id;
   var first_name = req.body.firstname;
   var last_name = req.body.lastname;
   var user_pin = req.body.userpin;
 
-    var sql = "UPDATE users SET First_Name ="+"'"+first_name+"'"+","+"Last_Name="+"'"+last_name+"'"+","+"Pin="+"'"+user_pin+"'" +"WHERE userid="+"'"+user_id+"'";
+    var sql = "UPDATE users SET First_Name ="+"'"+first_name+"'"+","+"Last_Name="+"'"+last_name+"'"+","+"Pin="+"'"+user_pin+"'" +"WHERE user_id="+"'"+user_id+"'";
     connection.query(sql, function (err, result) {
         if (err) {
             res.send(err);
@@ -391,9 +445,8 @@ router.post('/upload',upload, function(req,res){
 });
 
 /***********************************************************************************************************************/
-router.post('/accountInformation',function(req,res){
+router.post('/account',function(req,res){
     var email = req.body.email;
-    console.log("email=>",email);
     var company_name = req.body.company_name;
     var first_name = req.body.first_name;
     var last_name = req.body.last_name;
@@ -404,14 +457,49 @@ router.post('/accountInformation',function(req,res){
     var state = req.body.state;
     var companyzip = req.body.companyzip;
     var image = req.filename;
-    console.log("image", image);
-    var sql = "INSERT INTO accountinformation(email,company_name,first_name,last_name,phone_no,tax_rate,company_address, company_address2,state, company_zip) VALUES("
-    +"'"+email+"'"+","+"'"+company_name+"'"+","+"'"+first_name+"'"+","+"'"+last_name+"'"+","+"'"+phone_no+"'"+","+"'"+tax_rate+"'"+","+"'"+company_address
-    +"'"+","+"'"+company_address2+"'"+","+"'"+state+"'"+","+"'"+companyzip + "'"+")";
-    connection.query(sql, function(err,result){
-        if(result){
-            res.render('Account',{data:result});
-        }
+
+    var sql = `
+    insert into account (
+      company_name,
+      phone_no,
+      tax_rate,
+      address_id,
+      merchant_id,
+      device_settings,
+      tip_enabled,
+      bar_tab,
+      signature_amount,
+      cash_enabled,
+      discount_enabled,
+      fsa_enabled,
+      ebt_enabled,
+      table_tab,
+      table_num,
+      gift_cards,
+      cash_discount
+    ) values (
+      '${company_name}',
+      ${phone_no},
+      ${tax_rate},
+      NULL,
+      ${Date.now()},
+      'UUID',
+      true,
+      true,
+      10000,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    )
+    `
+    connection.query(sql, function(err,result) {
+      if(err) return res.render('pages/error', { error: err.message })
+      if(result) return res.redirect('dashboard');
     });
 });
 /***********************************************************************************************************************/

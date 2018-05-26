@@ -25,10 +25,10 @@ DROP TABLE IF EXISTS `account`;
 CREATE TABLE `account` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `company_name` varchar(100) NOT NULL,
-  `phone_no` varchar(10) NOT NULL,
+  `phone_no` varchar(20) NOT NULL,
   `tax_rate` varchar(10) NOT NULL,
   `address_id` int(11) DEFAULT NULL,
-  `merchant_id` int(10) unsigned DEFAULT NULL,
+  `merchant_id` bigint(20) DEFAULT NULL,
   `device_settings` varchar(25) DEFAULT NULL,
   `tip_enabled` tinyint(4) DEFAULT NULL,
   `bar_tab` tinyint(4) DEFAULT NULL,
@@ -45,45 +45,7 @@ CREATE TABLE `account` (
   UNIQUE KEY `merchant_id_UNIQUE` (`merchant_id`),
   KEY `addressid_address_idx` (`address_id`),
   CONSTRAINT `address_id_address` FOREIGN KEY (`address_id`) REFERENCES `address` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `account_category_map`
---
-
-DROP TABLE IF EXISTS `account_category_map`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
- SET character_set_client = utf8mb4 ;
-CREATE TABLE `account_category_map` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `account_id` int(11) NOT NULL,
-  `category_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `account_id_account_idx` (`account_id`),
-  KEY `category_id_category` (`category_id`),
-  CONSTRAINT `account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `category_id_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `account_user_map`
---
-
-DROP TABLE IF EXISTS `account_user_map`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
- SET character_set_client = utf8mb4 ;
-CREATE TABLE `account_user_map` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `account_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `account_id_idx` (`account_id`),
-  KEY `user_id_idx` (`user_id`),
-  CONSTRAINT `account_id` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -119,7 +81,10 @@ CREATE TABLE `category` (
   `color` varchar(25) NOT NULL,
   `image` blob,
   `active` tinyint(4) NOT NULL,
-  PRIMARY KEY (`id`)
+  `account_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `category_account_id_account_idx` (`account_id`),
+  CONSTRAINT `category_account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -181,7 +146,13 @@ CREATE TABLE `items` (
   `is_fsa` tinyint(4) DEFAULT NULL,
   `selector_id` int(11) DEFAULT NULL,
   `selector_name` varchar(45) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  `category_id` int(11) DEFAULT NULL,
+  `account_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `category_id_category_idx` (`category_id`),
+  KEY `item_account_id_account_idx` (`account_id`),
+  CONSTRAINT `item_account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `item_category_id_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -224,9 +195,12 @@ CREATE TABLE `order` (
   `tip_amount` decimal(10,2) DEFAULT NULL,
   `tip_user_id` int(11) DEFAULT NULL,
   `tip_approval_code` varchar(45) DEFAULT NULL,
+  `account_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `transaction_id_UNIQUE` (`transaction_id`),
   KEY `tip_user_id_user_idx` (`tip_user_id`),
+  KEY `order_account_id_account_idx` (`account_id`),
+  CONSTRAINT `order_account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE,
   CONSTRAINT `tip_user_id_user` FOREIGN KEY (`tip_user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -280,9 +254,12 @@ CREATE TABLE `payment` (
   `amount_tendered` decimal(10,2) DEFAULT NULL,
   `change_given` decimal(10,2) DEFAULT NULL,
   `xmp` longtext,
+  `account_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `order_id_order_idx` (`order_id`),
-  CONSTRAINT `order_id_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`) ON DELETE CASCADE
+  KEY `payment_account_id_account_idx` (`account_id`),
+  CONSTRAINT `order_id_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `payment_account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -301,7 +278,9 @@ CREATE TABLE `transactions` (
   `revenue` decimal(10,0) NOT NULL,
   `date` datetime NOT NULL,
   `status` varchar(100) NOT NULL,
-  PRIMARY KEY (`transactionId`)
+  `account_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`transactionId`),
+  KEY `trans_account_id_account_idx` (`account_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -316,7 +295,7 @@ CREATE TABLE `user_role` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(45) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -333,10 +312,15 @@ CREATE TABLE `users` (
   `email` varchar(100) NOT NULL,
   `pin` int(10) NOT NULL,
   `role_id` int(5) DEFAULT NULL,
+  `auth0_user_id` varchar(100) DEFAULT NULL,
+  `account_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `auth0_user_id_UNIQUE` (`auth0_user_id`),
   KEY `role_id_user_role_idx` (`role_id`),
-  CONSTRAINT `role_id_user_role` FOREIGN KEY (`role_id`) REFERENCES `user_role` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=latin1;
+  KEY `account_id_account_idx` (`account_id`),
+  CONSTRAINT `role_id_user_role` FOREIGN KEY (`role_id`) REFERENCES `user_role` (`id`),
+  CONSTRAINT `user_account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -348,4 +332,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-05-26 11:10:47
+-- Dump completed on 2018-05-26 19:52:59
