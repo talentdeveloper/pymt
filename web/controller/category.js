@@ -3,95 +3,165 @@ var connection = require('../config/connection.js');
 var jwt = require('jsonwebtoken');
 
 function index(req, res) {
-  var categories = [
-    //this is an array of all categories
-      {
-       "categoryId": 0,
-       "active": "true",
-       "categoryName": "Shirts",
-       "categoryColor": "yellow",
-       //shortName will be generated from category name using first 2 characters or categoryName
-       "image": "data:image/jpeg;base64,/9j/4RiDRXhpZgAATU0AKgA"
-     },
-     {
-       "categoryId": 1,
-       "active": "true",
-       "categoryName": "Pants",
-       "categoryColor": "blue",
-       //shortName will be generated from category name using first 2 characters or categoryName
-       "image": "data:image/jpeg;base64,/9j/4RiDRXhpZgAATU0AKgA"
-     },
-     {
-       "categoryId": 2,
-       "active": "true",
-       "categoryName": "Accessories",
-       "categoryColor": "purple",
-       //shortName will be generated from category name using first 2 characters or categoryName
-       "image": "data:image/jpeg;base64,/9j/4RiDRXhpZgAATU0AKgA"
-     }
-  ]
-  return res.status(200).json({
-    success: true,
-    message: 'Category list',
-    data: categories,
-    status: 200
+  var auth = req.headers.authorization
+  if(!auth || auth.indexOf('Bearer ') !== 0) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized request',
+      status: 401
+    })
+  }
+  var jwtToken = auth.split(' ')[1]
+  var currentUser = jwt.verify(jwtToken, config.secret)
+  var { getAllCategory } = require('../db/category')
+
+  getAllCategory(currentUser.accountId, (err, result)=> {
+    if(err) {
+      return res.status(400).json({
+        success: false,
+        message: err.message,
+        status: 400
+      })
+    }
+    var categories = result.map(category => ({
+      categoryId: category.id,
+      active: category.active,
+      categoryName: category.name,
+      categoryColor: category.color,
+      image: category.image
+    }))
+    return res.status(200).json({
+      success: true,
+      message: 'Category list',
+      data: categories,
+      status: 200
+    })
   })
 }
 
 
 function edit(req, res) {
-  var id = req.params.id
-  var category = {
-    "categoryId": 55555,  //if new category system with generate with next number
-    "active": "true",
-    "categoryName": "",
-    "categoryColor": "",
-    "image": ""
+  var auth = req.headers.authorization
+  if(!auth || auth.indexOf('Bearer ') !== 0) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized request',
+      status: 401
+    })
   }
-  return res.status(200).json({
-    success: true,
-    message: 'Category by id',
-    data: category,
-    status: 200
+  var jwtToken = auth.split(' ')[1]
+  var currentUser = jwt.verify(jwtToken, config.secret)
+
+  var id = req.params.id
+  var { editCategory } = require('../db/category')
+
+  editCategory(id, (err, result)=>{
+    if(err) {
+      return res.status(400).json({
+        success: false,
+        message: err.message,
+        status: 400
+      })
+    }
+    if(!result || !result.length) {
+      return res.status(404).json({
+        success: false,
+        message: 'Category not found',
+        status: 404
+      })
+    }
+    var category = result[0]
+    category = {
+      categoryId: result.id,
+      active: result.active,
+      categoryName: result.name,
+      categoryColor: result.color,
+      image: result.image
+    }
+    return res.status(200).json({
+      success: true,
+      message: 'Category by id',
+      data: category,
+      status: 200
+    })
   })
+
 }
 
 function create(req, res) {
-  var payload = req.body
-  // fake load
-  payload = {
-    "categoryId": 55555,  //if new category system with generate with next number
-    "active": "true",
-    "categoryName": "",
-    "categoryColor": "",
-    "image": ""
+  var auth = req.headers.authorization
+  if(!auth || auth.indexOf('Bearer ') !== 0) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized request',
+      status: 401
+    })
   }
+  var jwtToken = auth.split(' ')[1]
+  var currentUser = jwt.verify(jwtToken, config.secret)
+  var { createCategory } = require('../db/category')
 
-  return res.status(200).json({
-    success: true,
-    message: 'Category created successfully',
-    status: 200
+  var payload = req.body
+  createCategory({
+    name: payload.categoryName,
+    short_name: payload.categoryName.substr(0, 2),
+    color: payload.categoryColor,
+    image: payload.image,
+    active: payload.active,
+    account_id: currentUser.accountId
+  }, (err, result)=>{
+    if(err) {
+      return res.status(400).json({
+        success: false,
+        message: err.message,
+        status: 400
+      })
+    }
+    return res.status(200).json({
+      success: true,
+      message: 'Category created successfully',
+      status: 200
+    })
   })
 }
 
 
 function update(req, res) {
+  var auth = req.headers.authorization
+  if(!auth || auth.indexOf('Bearer ') !== 0) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized request',
+      status: 401
+    })
+  }
+  var jwtToken = auth.split(' ')[1]
+  var currentUser = jwt.verify(jwtToken, config.secret)
+  var { updateCategory } = require('../db/category')
+
   var id = req.params.id
   var payload = req.body
-
-  // fake category
-  payload = {
-    "categoryId": 55555,  //if new category system with generate with next number
-    "active": "true",
-    "categoryName": "",
-    "categoryColor": "",
-    "image": ""
-  }
-
-  return res.status(200).json({
-    success: true,
-    message: 'Category updated successfully',
-    status: 200
+  updateCategory({
+    id: id,
+    name: payload.categoryName,
+    short_name: payload.categoryName.substr(0, 2),
+    color: payload.categoryColor,
+    image: payload.image,
+    active: payload.active,
+    account_id: currentUser.accountId
+  }, (err, result)=>{
+    if(err) {
+      return res.status(400).json({
+        success: false,
+        message: err.message,
+        status: 400
+      })
+    }
+    return res.status(200).json({
+      success: true,
+      message: 'Category updated successfully',
+      status: 200
+    })
   })
 }
 

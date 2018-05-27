@@ -41,8 +41,12 @@ router.get('/addItem', function (req, res) {
 
 /***********************************************************************************************************************/
 router.get('/category', function (req, res) {
+  var jwtToken = req.cookies.jwtToken
+  if(!jwtToken) return res.render('pages/error', { layout: false, error: 'Unauthorized user' })
+  var currentUser = jwt.verify(jwtToken, config.secret)
+
   var { getAllCategory } = require('../db/category')
-  getAllCategory((err, result) => {
+  getAllCategory(currentUser.account_id, (err, result) => {
     if(err) return res.render('pages/error', { error: data.message });
     return res.render('pages/category', { data: result });
   })
@@ -232,23 +236,20 @@ router.post('/updateCategory',  function(req,res){
   var jwtToken = req.cookies.jwtToken
   if(!jwtToken) return res.render('pages/error', { layout: false, error: 'Unauthorized user' })
   var currentUser = jwt.verify(jwtToken, config.secret)
-  var { getAccountIdByUserId } = require('../db/user')
-  getAccountIdByUserId(currentUser.sub, (err, result) => {
+
+  var category = {
+    id: req.body.category_id,
+    name: req.body.category_name,
+    short_name: req.body.category_name.substr(0, 2),
+    color: req.body.category_color,
+    image: req.body.category_icon && req.body.category_icon.replace(/^data:image\/([a-z]+);base64,/, ''),
+    active: req.body.active,
+    account_id: currentUser.account_id
+  }
+  var { updateCategory } = require('../db/category')
+  updateCategory(category, (err, result)=>{
     if(err) return res.render('pages/error', { error: err.message })
-    var category = {
-      id: req.body.category_id,
-      name: req.body.category_name,
-      short_name: req.body.category_name.substr(0, 2),
-      color: req.body.category_color,
-      image: req.body.category_icon && req.body.category_icon.replace(/^data:image\/([a-z]+);base64,/, ''),
-      active: req.body.active,
-      account_id: result[0].account_id
-    }
-    var { updateCategory } = require('../db/category')
-    updateCategory(category, (err, result)=>{
-      if(err) return res.render('pages/error', { error: err.message })
-      return res.redirect('/category');
-    })
+    return res.redirect('/category');
   })
 });
 /***********************************************************************************************************************/
@@ -256,22 +257,19 @@ router.post('/AddCategory',  function(req,res) {
   var jwtToken = req.cookies.jwtToken
   if(!jwtToken) return res.render('pages/error', { layout: false, error: 'Unauthorized user' })
   var currentUser = jwt.verify(jwtToken, config.secret)
-  var { getAccountIdByUserId } = require('../db/user')
-  getAccountIdByUserId(currentUser.sub, (err, result) => {
+
+  var category = {
+    name: req.body.category_name,
+    short_name: req.body.category_name.substr(0, 2),
+    color: req.body.category_color,
+    image: req.body.category_icon && req.body.category_icon.replace(/^data:image\/([a-z]+);base64,/, ''),
+    active: req.body.active,
+    account_id: currentUser.account_id
+  }
+  var { createCategory } = require('../db/category')
+  createCategory(category, (err, result)=>{
     if(err) return res.render('pages/error', { error: err.message })
-    var category = {
-      name: req.body.category_name,
-      short_name: req.body.category_name.substr(0, 2),
-      color: req.body.category_color,
-      image: req.body.category_icon && req.body.category_icon.replace(/^data:image\/([a-z]+);base64,/, ''),
-      active: req.body.active,
-      account_id: result[0].account_id
-    }
-    var { createCategory } = require('../db/category')
-    createCategory(category, (err, result)=>{
-      if(err) return res.render('pages/error', { error: err.message })
-      return res.redirect('/category');
-    })
+    return res.redirect('/category');
   })
 });
 
@@ -313,11 +311,18 @@ router.post('/login',function(req,res){
           if(profile && !profile.error) {
             profile.access_token = data.access_token
             profile.id_token = data.id_token
-            var token = jwt.sign(profile, config.secret, {
-                expiresIn: 5000
-            });
-            res.cookie('jwtToken', token, { maxAge: 900000, httpOnly: true });
-            res.redirect('dashboard');
+
+            var { getAccountIdByUserId } = require('../db/user')
+            getAccountIdByUserId(profile.sub, (err, result) => {
+              if(err) return res.render('pages/error', { error: err.message });
+
+              profile.account_id = result[0].account_id
+              var token = jwt.sign(profile, config.secret, {
+                  expiresIn: 5000
+              });
+              res.cookie('jwtToken', token, { maxAge: 900000, httpOnly: true });
+              res.redirect('dashboard');
+            })
           } else {
             res.render('pages/error', { error: profile.error });
           }

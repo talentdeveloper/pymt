@@ -1,7 +1,7 @@
 var connection = require('../config/connection.js');
 
-function getAllCategory(callback) {
-  var sql = 'select * from category'
+function getAllCategory(account_id, callback) {
+  var sql = `select * from category where account_id = ${account_id}`
   connection.query(sql, function(err, result) {
     callback(err, result)
   });
@@ -25,8 +25,8 @@ function createCategory(category, callback) {
 
 function updateCategory(category, callback) {
   var sql = `update category set name = '${category.name}', short_name = '${category.short_name}',
-  color = '${category.color}', image = '${category.image}', active = ${category.active},
-  account_id = ${category.account_id} where id = ${category.id} and account_id = ${category.account_id}`
+  color = '${category.color}', image = '${category.image}', active = ${category.active}
+  where id = ${category.id} and account_id = ${category.account_id}`
   connection.query(sql, function(err, result) {
     callback(err, result)
   });
