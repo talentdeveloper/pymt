@@ -25,6 +25,7 @@ DROP TABLE IF EXISTS `account`;
 CREATE TABLE `account` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `company_name` varchar(100) NOT NULL,
+  `bank_account_no` varchar(45) DEFAULT NULL,
   `phone_no` varchar(20) NOT NULL,
   `tax_rate` varchar(10) NOT NULL,
   `address_id` int(11) DEFAULT NULL,
@@ -68,6 +69,62 @@ CREATE TABLE `address` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `cash`
+--
+
+DROP TABLE IF EXISTS `cash`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+ SET character_set_client = utf8mb4 ;
+CREATE TABLE `cash` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `opening_amount` decimal(10,2) NOT NULL,
+  `closing_amount` decimal(10,2) DEFAULT NULL,
+  `sales_amount` decimal(10,2) DEFAULT NULL,
+  `eod_till_user_entry` varchar(45) DEFAULT NULL,
+  `total_drop_amount` decimal(10,2) DEFAULT NULL,
+  `opening_date` datetime NOT NULL,
+  `closing_date` datetime DEFAULT NULL,
+  `account_id` int(11) DEFAULT NULL,
+  `day_opened` tinyint(4) NOT NULL DEFAULT '1',
+  `day_closed` tinyint(4) NOT NULL DEFAULT '0',
+  `opening_user_id` int(11) DEFAULT NULL,
+  `closing_user_id` int(11) DEFAULT NULL,
+  `eod_till_user_id` int(11) DEFAULT NULL,
+  `eod_till_entry_date` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `cash_account_id_account_idx` (`account_id`),
+  KEY `cash_opening_user_id_user_idx` (`opening_user_id`),
+  KEY `cash_closing_user_id_user_idx` (`closing_user_id`),
+  KEY `cash_eod_till_user_id_user_idx` (`eod_till_user_id`),
+  CONSTRAINT `cash_account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `cash_closing_user_id_user` FOREIGN KEY (`closing_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `cash_eod_till_user_id_user` FOREIGN KEY (`eod_till_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `cash_opening_user_id_user` FOREIGN KEY (`opening_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `cash_drop`
+--
+
+DROP TABLE IF EXISTS `cash_drop`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+ SET character_set_client = utf8mb4 ;
+CREATE TABLE `cash_drop` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `amount` decimal(10,2) NOT NULL,
+  `drop_time` datetime NOT NULL,
+  `drop_by` int(11) DEFAULT NULL,
+  `cash_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `cash_drop_cash_id_cash_idx` (`cash_id`),
+  KEY `cash_drop_by_user_idx` (`drop_by`),
+  CONSTRAINT `cash_drop_by_user` FOREIGN KEY (`drop_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `cash_drop_cash_id_cash` FOREIGN KEY (`cash_id`) REFERENCES `cash` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `category`
 --
 
@@ -85,7 +142,7 @@ CREATE TABLE `category` (
   PRIMARY KEY (`id`),
   KEY `category_account_id_account_idx` (`account_id`),
   CONSTRAINT `category_account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -196,11 +253,14 @@ CREATE TABLE `order` (
   `tip_user_id` int(11) DEFAULT NULL,
   `tip_approval_code` varchar(45) DEFAULT NULL,
   `account_id` int(11) DEFAULT NULL,
+  `cash_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `transaction_id_UNIQUE` (`transaction_id`),
   KEY `tip_user_id_user_idx` (`tip_user_id`),
   KEY `order_account_id_account_idx` (`account_id`),
+  KEY `cash_id_idx` (`cash_id`),
   CONSTRAINT `order_account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `order_cash_id_cash` FOREIGN KEY (`cash_id`) REFERENCES `cash` (`id`),
   CONSTRAINT `tip_user_id_user` FOREIGN KEY (`tip_user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -255,9 +315,12 @@ CREATE TABLE `payment` (
   `change_given` decimal(10,2) DEFAULT NULL,
   `xmp` longtext,
   `account_id` int(11) DEFAULT NULL,
+  `cash_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `order_id_order_idx` (`order_id`),
   KEY `payment_account_id_account_idx` (`account_id`),
+  KEY `cash_id_cash_idx` (`cash_id`),
+  CONSTRAINT `cash_id_cash` FOREIGN KEY (`cash_id`) REFERENCES `cash` (`id`),
   CONSTRAINT `order_id_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`) ON DELETE CASCADE,
   CONSTRAINT `payment_account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -332,4 +395,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-05-26 19:52:59
+-- Dump completed on 2018-05-27 22:45:26
