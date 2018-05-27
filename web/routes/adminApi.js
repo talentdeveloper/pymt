@@ -41,7 +41,7 @@ router.get('/addItem', function (req, res) {
 
 /***********************************************************************************************************************/
 router.get('/category', function (req, res) {
-  var { getAllCategory } = require('../helper/category')
+  var { getAllCategory } = require('../db/category')
   getAllCategory((err, result) => {
     if(err) return res.render('pages/error', { error: data.message });
     return res.render('pages/category', { data: result });
@@ -50,7 +50,7 @@ router.get('/category', function (req, res) {
 /***********************************************************************************************************************/
 router.get('/getCategory/:id', function (req, res) {
     var id = req.params.id;
-    var { editCategory } = require('../helper/category')
+    var { editCategory } = require('../db/category')
     editCategory(id, (err, result) => {
       if(err) return res.status(500).json({
         success: false,
@@ -100,11 +100,11 @@ router.get('/items', function (req, res) {
 
 /***********************************************************************************************************************/
 router.get('/users', function (req, res) {
-  var token = require('../helper').token;
+  var token = require('../db').token;
   if(!token) return res.send('No token exists in server')
 
-  var { getAccountNames } = require('../helper/account')
-  var { getUserRoles } = require('../helper/user')
+  var { getAccountNames } = require('../db/account')
+  var { getUserRoles } = require('../db/user')
 
   var args = {
     headers: {
@@ -154,7 +154,7 @@ router.get('/itemDelete/:id', function (req, res) {
 /***********************************************************************************************************************/
 router.get('/userEdit/:id', function (req, res) {
     var id = req.params.id;
-    var { editUser } = require('../helper/user')
+    var { editUser } = require('../db/user')
     editUser(id, (err, result) => {
       if(err) return res.status(500).json({
         success: false,
@@ -172,7 +172,7 @@ router.get('/userEdit/:id', function (req, res) {
 /***********************************************************************************************************************/
 router.get('/userDelete/:id', function (req, res) {
     var id = req.params.id;
-    var token = require('../helper').token;
+    var token = require('../db').token;
 
     if(!token) {
       return res.send('No token exists in server')
@@ -188,7 +188,7 @@ router.get('/userDelete/:id', function (req, res) {
     client.delete(url, args, function (data, response) {
       if(data && !data.error) return res.render('pages/error', { error: data.error_description || data.message })
       else {
-        var { deleteUser } = require('../helper/user')
+        var { deleteUser } = require('../db/user')
         deleteUser(id, (err, result) => {
           if(err) return res.render('pages/error', { error: err.message })
           return res.redirect('/users');
@@ -232,7 +232,7 @@ router.post('/updateCategory',  function(req,res){
   var jwtToken = req.cookies.jwtToken
   if(!jwtToken) return res.render('pages/error', { layout: false, error: 'Unauthorized user' })
   var currentUser = jwt.verify(jwtToken, config.secret)
-  var { getAccountIdByUserId } = require('../helper/user')
+  var { getAccountIdByUserId } = require('../db/user')
   getAccountIdByUserId(currentUser.sub, (err, result) => {
     if(err) return res.render('pages/error', { error: err.message })
     var category = {
@@ -244,7 +244,7 @@ router.post('/updateCategory',  function(req,res){
       active: req.body.active,
       account_id: result[0].account_id
     }
-    var { updateCategory } = require('../helper/category')
+    var { updateCategory } = require('../db/category')
     updateCategory(category, (err, result)=>{
       if(err) return res.render('pages/error', { error: err.message })
       return res.redirect('/category');
@@ -256,7 +256,7 @@ router.post('/AddCategory',  function(req,res) {
   var jwtToken = req.cookies.jwtToken
   if(!jwtToken) return res.render('pages/error', { layout: false, error: 'Unauthorized user' })
   var currentUser = jwt.verify(jwtToken, config.secret)
-  var { getAccountIdByUserId } = require('../helper/user')
+  var { getAccountIdByUserId } = require('../db/user')
   getAccountIdByUserId(currentUser.sub, (err, result) => {
     if(err) return res.render('pages/error', { error: err.message })
     var category = {
@@ -267,7 +267,7 @@ router.post('/AddCategory',  function(req,res) {
       active: req.body.active,
       account_id: result[0].account_id
     }
-    var { createCategory } = require('../helper/category')
+    var { createCategory } = require('../db/category')
     createCategory(category, (err, result)=>{
       if(err) return res.render('pages/error', { error: err.message })
       return res.redirect('/category');
@@ -360,7 +360,7 @@ router.post('/UserDataInserted', function(req,res){
   var user_id= req.body.userId;
   var first_name = req.body.firstName;
   var last_name = req.body.lastName;
-  var token = require('../helper').token;
+  var token = require('../db').token;
 
   if(!token) {
     return res.send('No token exists in server')
@@ -405,7 +405,7 @@ router.post('/UserDataInserted', function(req,res){
     console.log('------------------------- response body -------------------')
     console.log(data);
     if(data && !data.error) {
-      var { createUser } = require('../helper/user')
+      var { createUser } = require('../db/user')
       user.auth0_user_id = data.user_id
 
       createUser(user, (err, result) => {

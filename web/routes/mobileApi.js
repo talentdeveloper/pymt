@@ -10,6 +10,7 @@ var item = require('../controller/item')
 var modifier = require('../controller/modifier')
 var order = require('../controller/order')
 var receipt = require('../controller/receipt')
+var cash = require('../controller/cash')
 var login = require('../controller/login')
 
 // Account
@@ -45,12 +46,19 @@ router.post('/api/payment/post/manual', order.payment)
 router.post('/api/history/post/order/:id/status', order.update)
 router.get('/api/history/get/orderTotals/:from/:to', order.totals)
 router.get('/api/history/get/allTips/:from/:to', order.tips)
-
 router.post('/api/receipt/:contact', receipt.send)
 router.get('/api/receipt/:order/:contact', receipt.deliver)
 
-
+// Login
 router.post('/api/accounts/user/post/pin', login.login)
+
+// Cash
+router.post('/api/manager/post/openingAmount', cash.openDay)
+router.post('/api/manager/post/closingAmount', cash.closeDay)
+router.post('/api/manager/post/tillAmount', cash.setEODTillAmount)
+router.post('/api/manager/post/dropAmount', cash.safeDrop)
+router.get('/api/manager/get/cashDrop', cash.getCurrentCashDrops)
+router.get('/api/manager/get/closingAmount', cash.getClosing)
 
 /***********************************************************************************************************************/
 // var storage = multer.diskStorage({
