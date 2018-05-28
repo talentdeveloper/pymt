@@ -146,6 +146,25 @@ CREATE TABLE `category` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `category_item_map`
+--
+
+DROP TABLE IF EXISTS `category_item_map`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+ SET character_set_client = utf8mb4 ;
+CREATE TABLE `category_item_map` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `category_id` int(11) NOT NULL,
+  `item_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `category_item_map_category_idx` (`category_id`),
+  KEY `category_item_map_item_idx` (`item_id`),
+  CONSTRAINT `category_item_map_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `category_item_map_item` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `item_detail`
 --
 
@@ -163,7 +182,7 @@ CREATE TABLE `item_detail` (
   PRIMARY KEY (`id`),
   KEY `item_id_item_idx` (`item_id`),
   CONSTRAINT `item_id_item` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -182,7 +201,7 @@ CREATE TABLE `item_modifier_map` (
   KEY `modifier_id_idx` (`modifier_id`),
   CONSTRAINT `item_id` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`) ON DELETE CASCADE,
   CONSTRAINT `modifier_id` FOREIGN KEY (`modifier_id`) REFERENCES `modifier` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -203,14 +222,11 @@ CREATE TABLE `items` (
   `is_fsa` tinyint(4) DEFAULT NULL,
   `selector_id` int(11) DEFAULT NULL,
   `selector_name` varchar(45) DEFAULT NULL,
-  `category_id` int(11) DEFAULT NULL,
   `account_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `category_id_category_idx` (`category_id`),
   KEY `item_account_id_account_idx` (`account_id`),
-  CONSTRAINT `item_account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `item_category_id_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=latin1;
+  CONSTRAINT `item_account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -223,10 +239,29 @@ DROP TABLE IF EXISTS `modifier`;
 CREATE TABLE `modifier` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(45) DEFAULT NULL,
-  `modifier_key` varchar(45) DEFAULT NULL,
-  `modifier_value` varchar(45) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `account_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `modifier_account_id_account_idx` (`account_id`),
+  CONSTRAINT `modifier_account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `modifier_attribute`
+--
+
+DROP TABLE IF EXISTS `modifier_attribute`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+ SET character_set_client = utf8mb4 ;
+CREATE TABLE `modifier_attribute` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `modifier_id` int(11) NOT NULL,
+  `name` varchar(100) DEFAULT NULL,
+  `value` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `modifier_attr_modifier_id_modifier_idx` (`modifier_id`),
+  CONSTRAINT `modifier_attr_modifier_id_modifier` FOREIGN KEY (`modifier_id`) REFERENCES `modifier` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -395,4 +430,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-05-27 22:45:26
+-- Dump completed on 2018-05-29  0:23:14
