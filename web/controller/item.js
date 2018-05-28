@@ -3,68 +3,92 @@ var connection = require('../config/connection.js');
 var jwt = require('jsonwebtoken');
 
 function index(req, res) {
-  var items = { allItems: [
-        {
-          "itemId": 0,
-          "itemName": "",
-          "soldByWeight": "true",
-          "trackInventory": "",
-          "allowBackorder": "",
-          "isTaxable": "",
-          "isEBT": "",
-          "isFSA": "",
-          "selectors": {
-            "selectorId": 0,
-            "selectorName": "",
-            "details": [
-              {
-                "itemId": 0, // first item in selectors details is same as base item
-                "name": "small",
-                "price": 0,
-                "quantityRemaining": 0,
-                "itemWeight": 0
-              },
-              {
-                "itemId": 1,
-                "name": "medium",
-                "price": 0,
-                "quantityRemaining": 0,
-                "itemWeight": 0
-              },
-              {
-                "itemId": 2,
-                "name": "large",
-                "price": 0,
-                "quantityRemaining": 0,
-                "itemWeight": 0
-              }
-            ]
-          },
-          "modifiers": { "modifierList": 16, "modifierList": 1 },
-        },
-        {
-          "itemId": "",
-          "itemName": "",
-          "price": 0,
-          "hasWeight": "true",
-          "itemWeight": .5,
-          "trackInventory": "",
-          "quantityRemaining": 0,
-          "allowBackorder": "true",
-          "isTaxable": "true",
-          "isEBT": "false",
-          "isFSA": "false",
-          "selectors": {},
-          "modifiers": {},
-        }
-    ]
+  var auth = req.headers.authorization
+  if(!auth || auth.indexOf('Bearer ') !== 0) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized request',
+      status: 401
+    })
   }
-  return res.status(200).json({
-    success: true,
-    message: 'Item list',
-    data: items,
-    status: 200
+  var jwtToken = auth.split(' ')[1]
+  var currentUser = jwt.verify(jwtToken, config.secret)
+  var { getAllItems } = require('../db/item')
+
+  getAllItems(currentUser.accountId, (err, result)=> {
+    if(err) {
+      return res.status(400).json({
+        success: false,
+        message: err.message,
+        status: 400
+      })
+    }
+    var items = {
+      allItems: result
+    }
+    return res.status(200).json({
+      success: true,
+      message: 'Item list',
+      data: items,
+      status: 200
+    })
   })
+  // var items = { allItems: [
+  //       {
+  //         "itemId": 0,
+  //         "itemName": "",
+  //         "soldByWeight": "true",
+  //         "trackInventory": "",
+  //         "allowBackorder": "",
+  //         "isTaxable": "",
+  //         "isEBT": "",
+  //         "isFSA": "",
+  //         "selectors": {
+  //           "selectorId": 0,
+  //           "selectorName": "",
+  //           "details": [
+  //             {
+  //               "itemId": 0, // first item in selectors details is same as base item
+  //               "name": "small",
+  //               "price": 0,
+  //               "quantityRemaining": 0,
+  //               "itemWeight": 0
+  //             },
+  //             {
+  //               "itemId": 1,
+  //               "name": "medium",
+  //               "price": 0,
+  //               "quantityRemaining": 0,
+  //               "itemWeight": 0
+  //             },
+  //             {
+  //               "itemId": 2,
+  //               "name": "large",
+  //               "price": 0,
+  //               "quantityRemaining": 0,
+  //               "itemWeight": 0
+  //             }
+  //           ]
+  //         },
+  //         "modifiers": { "modifierList": 16, "modifierList": 1 },
+  //       },
+  //       {
+  //         "itemId": "",
+  //         "itemName": "",
+  //         "price": 0,
+  //         "hasWeight": "true",
+  //         "itemWeight": .5,
+  //         "trackInventory": "",
+  //         "quantityRemaining": 0,
+  //         "allowBackorder": "true",
+  //         "isTaxable": "true",
+  //         "isEBT": "false",
+  //         "isFSA": "false",
+  //         "selectors": {},
+  //         "modifiers": {},
+  //       }
+  //   ]
+  // }
 }
 
 
