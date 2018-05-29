@@ -69,6 +69,26 @@ CREATE TABLE `address` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `cart`
+--
+
+DROP TABLE IF EXISTS `cart`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+ SET character_set_client = utf8mb4 ;
+CREATE TABLE `cart` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `cart_number` int(11) DEFAULT NULL,
+  `table_id` int(11) DEFAULT NULL,
+  `order_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `cart_table_id_table_idx` (`table_id`),
+  KEY `cart_order_id_order_idx` (`order_id`),
+  CONSTRAINT `cart_order_id_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `cart_table_id_table` FOREIGN KEY (`table_id`) REFERENCES `table` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `cash`
 --
 
@@ -257,7 +277,7 @@ CREATE TABLE `modifier_attribute` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `modifier_id` int(11) NOT NULL,
   `name` varchar(100) DEFAULT NULL,
-  `value` varchar(45) DEFAULT NULL,
+  `value` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `modifier_attr_modifier_id_modifier_idx` (`modifier_id`),
   CONSTRAINT `modifier_attr_modifier_id_modifier` FOREIGN KEY (`modifier_id`) REFERENCES `modifier` (`id`) ON DELETE CASCADE
@@ -273,31 +293,24 @@ DROP TABLE IF EXISTS `order`;
  SET character_set_client = utf8mb4 ;
 CREATE TABLE `order` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `cash_id` int(11) DEFAULT NULL,
   `order_date` datetime DEFAULT NULL,
   `order_type` varchar(45) DEFAULT NULL,
+  `table_number` varchar(45) DEFAULT NULL,
   `transaction_id` int(11) NOT NULL,
   `order_status` varchar(45) DEFAULT NULL,
   `cart_total` decimal(10,2) DEFAULT NULL,
   `discount_percent` float DEFAULT NULL,
   `discount_amount` decimal(10,2) DEFAULT NULL,
   `item_quantity` int(11) DEFAULT NULL,
-  `giftcard_redeem_amount` decimal(10,2) DEFAULT NULL,
-  `giftcard_authcode` varchar(45) DEFAULT NULL,
-  `giftcard_last4` varchar(10) DEFAULT NULL,
-  `tip_amount` decimal(10,2) DEFAULT NULL,
-  `tip_user_id` int(11) DEFAULT NULL,
-  `tip_approval_code` varchar(45) DEFAULT NULL,
   `account_id` int(11) DEFAULT NULL,
-  `cash_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `transaction_id_UNIQUE` (`transaction_id`),
-  KEY `tip_user_id_user_idx` (`tip_user_id`),
   KEY `order_account_id_account_idx` (`account_id`),
   KEY `cash_id_idx` (`cash_id`),
   CONSTRAINT `order_account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `order_cash_id_cash` FOREIGN KEY (`cash_id`) REFERENCES `cash` (`id`),
-  CONSTRAINT `tip_user_id_user` FOREIGN KEY (`tip_user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  CONSTRAINT `order_cash_id_cash` FOREIGN KEY (`cash_id`) REFERENCES `cash` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -309,13 +322,19 @@ DROP TABLE IF EXISTS `order_item`;
  SET character_set_client = utf8mb4 ;
 CREATE TABLE `order_item` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `order_id` int(11) DEFAULT NULL,
+  `item_id` int(11) DEFAULT NULL,
   `name` varchar(45) DEFAULT NULL,
   `price` decimal(10,2) DEFAULT NULL,
   `quantity` int(11) DEFAULT NULL,
   `is_taxable` tinyint(4) DEFAULT NULL,
   `is_ebt` tinyint(4) DEFAULT NULL,
   `is_fsa` tinyint(4) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `order_item_order_id_order_idx` (`order_id`),
+  KEY `order_item_item_id_item_idx` (`item_id`),
+  CONSTRAINT `order_item_item_id_item` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`),
+  CONSTRAINT `order_item_order_id_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -329,8 +348,8 @@ DROP TABLE IF EXISTS `order_modifier`;
 CREATE TABLE `order_modifier` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `order_id` int(11) NOT NULL,
-  `modifier_key` varchar(45) DEFAULT NULL,
-  `modifier_value` varchar(45) DEFAULT NULL,
+  `name` varchar(100) DEFAULT NULL,
+  `value` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -358,6 +377,24 @@ CREATE TABLE `payment` (
   CONSTRAINT `cash_id_cash` FOREIGN KEY (`cash_id`) REFERENCES `cash` (`id`),
   CONSTRAINT `order_id_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`) ON DELETE CASCADE,
   CONSTRAINT `payment_account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `table`
+--
+
+DROP TABLE IF EXISTS `table`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+ SET character_set_client = utf8mb4 ;
+CREATE TABLE `table` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `number` varchar(45) DEFAULT NULL,
+  `status` varchar(45) DEFAULT NULL,
+  `order_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `table_order_id_order_idx` (`order_id`),
+  CONSTRAINT `table_order_id_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -430,4 +467,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-05-29  0:23:14
+-- Dump completed on 2018-05-29 22:43:11
