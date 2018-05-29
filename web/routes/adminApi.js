@@ -22,10 +22,10 @@ var storage = multer.diskStorage({
 var upload = multer({ storage: storage }).single('userPhoto');
 /***********************************************************************************************************************/
 router.get('/', function(req, res){
-  // var callbackUrl = 'http://localhost:3000/dashboard'
-  // var parameters = 'response_type=code&client_id='+config.client_id+'&connection='+config.auth0_connection+'&redirect_uri='+callbackUrl
-  // return res.redirect(config.auth0_url + 'authorize?' + parameters)
-  return res.render('pages/index', {layout: false})
+  var callbackUrl = 'http://localhost:3000/dashboard'
+  var parameters = 'response_type=code&client_id='+config.client_id+'&connection='+config.auth0_connection+'&redirect_uri='+callbackUrl
+  return res.redirect(config.auth0_url + 'authorize?' + parameters)
+  // return res.render('pages/index', {layout: false})
 });
 
 router.get('/logout',function(req, res){

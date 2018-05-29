@@ -4,85 +4,49 @@ var jwt = require('jsonwebtoken');
 var moment = require('moment');
 
 function index(req, res) {
-  var orders = [
-    //This is an array of all orders
-    {
-      "orderDate": "2018-05-21T22:14:05.255Z",
-      "transactionId": 29384, //transactionId is random and unique accross platform not just one account
-      "orderStatus": "PAID",
-      "cartTotal": 7.34,
-      "discountPercent": "0",
-      "discountAmount": 0,
-      "itemQuantity": 5,
-      //payment type charge
-      orderObj:
-      {
-        "orderDate": "2018-05-21T22:14:05.255Z",
-        "orderType": "delivery",
-        "tableNumber": 12,
-        "transactionId": 29384, //transactionId is sequential and unique
-        "orderStatus": "PAID",
-        "cartTotal": 7.34,
-        "discountPercent": "0",
-        "discountAmount": 0,
-        "itemQuantity": 5,
-        "items": [
-          {
-            "itemId": 0,
-            "name": "Cheeseburger-small",
-            "price": 3.00,
-            "quantity": 1,
-            "isTaxable": "",
-            "isEBT": "",
-            "isFSA": "",
-            "modifiers": {
-            "Cheese": 0.5,
-            "Tomato": 0
-             }
-          },
-          {
-            "itemId": 0,
-            "name": "Cheeseburger-medium",
-            "price": 4.00,
-            "quantity": 2,
-            "isTaxable": "",
-            "isEBT": "",
-            "isFSA": "",
-            "modifiers": {}
-          },
-        ],
-        "payment": {
-          "paymentType": "charge",
-          "amountTendered": 20,
-          "changeGiven": 17.66,
-          "xmp": `
-          <xmp>
-          <response>
-          <RefId>102</RefId>
-          <ResultCode>0</ResultCode>
-          <RespMSG>APPROVAL%2000</RespMSG>
-          <Message>Approved</Message>
-          <AuthCode>005805</AuthCode>
-          <PNRef>8139012057895</PNRef>
-          <PaymentType>Credit</PaymentType>
-          <TransType>Sale</TransType>
-          <SN>9890</SN>
-          <ExtData>Amount=,InvNum=2,CardType=VISA,BatchNum=101,Tip=0.00,CashBack=0.00,Fee=0.04,AcntLast4=4504,Name=SHEETS%2fMATTHEW%20%20%20%20%20%20%20%20%20%20%20%20,SVC=0.00,TotalAmt=1.04,DISC=0.00,Donation=0.00,SHFee=0.00,RwdPoints=0,RwdBalance=0,RwdIssued=,EBTFSLedgerBalance=,EBTFSAvailBalance=,EBTFSBeginBalance=,EBTCashLedgerBalance=,EBTCashAvailBalance=,EBTCashBeginBalance=,RewardCode=,AcqRefData=,ProcessData=,RefNo=,RewardQR=,Language=English,EntryType=CHIP,table_num=0,clerk_id=,ticket_num=,ControlNum=,TaxCity=0.00,TaxState=0.00,Cust1=,Cust1Value=,Cust2=,Cust2Value=,Cust3=,Cust3Value=,AcntFirst4=4240,TaxAmount=0.00</ExtData>
-          <EMVData>AID=A0000000031010,AppName=VISA DEBIT,TVR=8080008800,TSI=6800,IAD=3078F1B9AD6222CF3030,ARC=00</EMVData>
-          <Receipt>Merchant</Receipt>
-          <CVMResult>2</CVMResult>
-          </response>
-          </xmp>
-          `
-          },
-          "tip": {
-            "amount": 3.25,
-            "user": "",
-            "approvalCode": ""
-          }
-      }
-    }
-  ]
+  // var orders = {
+  //   carts: [
+  //     "cartNumber": "48392840", //cartNumber is unique across platform
+  //     "status": "",
+  //     "tableId": "",
+  //     orderObj: {
+  //       "orderDate": "2018-05-21T22:14:05.255Z",
+  //       "orderType": "null",
+  //       "tableNumber": 12,
+  //       "transactionId": 29384, //transactionId is unique across platform
+  //       "orderStatus": "CART",
+  //       "cartTotal": 7.34,
+  //       "discountPercent": "0",
+  //       "discountAmount": 0,
+  //       "itemQuantity": 5,
+  //       "items": [
+  //         {
+  //           "itemId": 0,
+  //           "name": "Cheeseburger Small",
+  //           "price": 3.00,
+  //           "quantity": 1, // if trackinventory is true moves from avalible to hold
+  //           "isTaxable": "",
+  //           "isEBT": "",
+  //           "isFSA": "",
+  //           "modifiers": {
+  //           "Cheese": 0.5,
+  //           "Tomato": 0
+  //           }
+  //         },
+  //         {
+  //           "itemId": 0,
+  //           "name": "Cheeseburger Medium",
+  //           "price": 4.00,
+  //           "quantity": 2, // if trackinventory is true moves from avalible to hold
+  //           "isTaxable": "",
+  //           "isEBT": "",
+  //           "isFSA": "",
+  //           "modifiers": {}
+  //         },
+  //       ]
+  //     }
+  //   ]
+  // }
 
   return res.status(200).json({
     success: true,
@@ -124,21 +88,15 @@ function simple(req, res) {
 function edit(req, res) {
   var id = req.params.id
   var order = {
-    "orderDate": "2018-05-21T22:14:05.255Z",
-    "transactionId": 29384, //transactionId is random and unique accross platform not just one account
-    "orderStatus": "PAID",
-    "cartTotal": 7.34,
-    "discountPercent": "0",
-    "discountAmount": 0,
-    "itemQuantity": 5,
-    //payment type charge
-    orderObj:
-    {
+    "cartNumber": "null", //cartNumber is unique across platform assigned new if null
+    "status": "",
+    "tableId": "",
+    "orderObj": {
       "orderDate": "2018-05-21T22:14:05.255Z",
-      "orderType": "delivery",
+      "orderType": "null",
       "tableNumber": 12,
-      "transactionId": 29384, //transactionId is sequential and unique
-      "orderStatus": "PAID",
+      "transactionId": null, //cartNumber is unique across platform assigned new if null
+      "orderStatus": "CART",
       "cartTotal": 7.34,
       "discountPercent": "0",
       "discountAmount": 0,
@@ -146,7 +104,7 @@ function edit(req, res) {
       "items": [
         {
           "itemId": 0,
-          "name": "Cheeseburger-small",
+          "name": "Cheeseburger Small",
           "price": 3.00,
           "quantity": 1,
           "isTaxable": "",
@@ -155,11 +113,11 @@ function edit(req, res) {
           "modifiers": {
           "Cheese": 0.5,
           "Tomato": 0
-           }
+          }
         },
         {
           "itemId": 0,
-          "name": "Cheeseburger-medium",
+          "name": "Cheeseburger Medium",
           "price": 4.00,
           "quantity": 2,
           "isTaxable": "",
@@ -167,36 +125,7 @@ function edit(req, res) {
           "isFSA": "",
           "modifiers": {}
         },
-      ],
-      "payment": {
-        "paymentType": "charge",
-        "amountTendered": 20,
-        "changeGiven": 17.66,
-        "xmp": `
-        <xmp>
-        <response>
-        <RefId>102</RefId>
-        <ResultCode>0</ResultCode>
-        <RespMSG>APPROVAL%2000</RespMSG>
-        <Message>Approved</Message>
-        <AuthCode>005805</AuthCode>
-        <PNRef>8139012057895</PNRef>
-        <PaymentType>Credit</PaymentType>
-        <TransType>Sale</TransType>
-        <SN>9890</SN>
-        <ExtData>Amount=,InvNum=2,CardType=VISA,BatchNum=101,Tip=0.00,CashBack=0.00,Fee=0.04,AcntLast4=4504,Name=SHEETS%2fMATTHEW%20%20%20%20%20%20%20%20%20%20%20%20,SVC=0.00,TotalAmt=1.04,DISC=0.00,Donation=0.00,SHFee=0.00,RwdPoints=0,RwdBalance=0,RwdIssued=,EBTFSLedgerBalance=,EBTFSAvailBalance=,EBTFSBeginBalance=,EBTCashLedgerBalance=,EBTCashAvailBalance=,EBTCashBeginBalance=,RewardCode=,AcqRefData=,ProcessData=,RefNo=,RewardQR=,Language=English,EntryType=CHIP,table_num=0,clerk_id=,ticket_num=,ControlNum=,TaxCity=0.00,TaxState=0.00,Cust1=,Cust1Value=,Cust2=,Cust2Value=,Cust3=,Cust3Value=,AcntFirst4=4240,TaxAmount=0.00</ExtData>
-        <EMVData>AID=A0000000031010,AppName=VISA DEBIT,TVR=8080008800,TSI=6800,IAD=3078F1B9AD6222CF3030,ARC=00</EMVData>
-        <Receipt>Merchant</Receipt>
-        <CVMResult>2</CVMResult>
-        </response>
-        </xmp>
-        `
-        },
-        "tip": {
-          "amount": 3.25,
-          "user": "",
-          "approvalCode": ""
-        }
+      ]
     }
   }
 
@@ -212,14 +141,15 @@ function create(req, res) {
   var payload = req.body
   // fake payload
   payload = {
-    //payment type charge
-    orderObj:
-    {
+    "cartNumber": "null", //cartNumber is unique across platform assigned new if null
+    "status": "",
+    "tableId": "",
+    "orderObj": {
       "orderDate": "2018-05-21T22:14:05.255Z",
-      "orderType": "delivery",
+      "orderType": "null",
       "tableNumber": 12,
-      "transactionId": 29384, //transactionId is sequential and unique
-      "orderStatus": "PAID",
+      "transactionId": null, //cartNumber is unique across platform assigned new if null
+      "orderStatus": "CART",
       "cartTotal": 7.34,
       "discountPercent": "0",
       "discountAmount": 0,
@@ -227,7 +157,7 @@ function create(req, res) {
       "items": [
         {
           "itemId": 0,
-          "name": "Cheeseburger-small",
+          "name": "Cheeseburger Small",
           "price": 3.00,
           "quantity": 1,
           "isTaxable": "",
@@ -236,11 +166,11 @@ function create(req, res) {
           "modifiers": {
           "Cheese": 0.5,
           "Tomato": 0
-           }
+          }
         },
         {
           "itemId": 0,
-          "name": "Cheeseburger-medium",
+          "name": "Cheeseburger Medium",
           "price": 4.00,
           "quantity": 2,
           "isTaxable": "",
@@ -248,36 +178,7 @@ function create(req, res) {
           "isFSA": "",
           "modifiers": {}
         },
-      ],
-      "payment": {
-        "paymentType": "charge",
-        "amountTendered": 20,
-        "changeGiven": 17.66,
-        "xmp": `
-        <xmp>
-        <response>
-        <RefId>102</RefId>
-        <ResultCode>0</ResultCode>
-        <RespMSG>APPROVAL%2000</RespMSG>
-        <Message>Approved</Message>
-        <AuthCode>005805</AuthCode>
-        <PNRef>8139012057895</PNRef>
-        <PaymentType>Credit</PaymentType>
-        <TransType>Sale</TransType>
-        <SN>9890</SN>
-        <ExtData>Amount=,InvNum=2,CardType=VISA,BatchNum=101,Tip=0.00,CashBack=0.00,Fee=0.04,AcntLast4=4504,Name=SHEETS%2fMATTHEW%20%20%20%20%20%20%20%20%20%20%20%20,SVC=0.00,TotalAmt=1.04,DISC=0.00,Donation=0.00,SHFee=0.00,RwdPoints=0,RwdBalance=0,RwdIssued=,EBTFSLedgerBalance=,EBTFSAvailBalance=,EBTFSBeginBalance=,EBTCashLedgerBalance=,EBTCashAvailBalance=,EBTCashBeginBalance=,RewardCode=,AcqRefData=,ProcessData=,RefNo=,RewardQR=,Language=English,EntryType=CHIP,table_num=0,clerk_id=,ticket_num=,ControlNum=,TaxCity=0.00,TaxState=0.00,Cust1=,Cust1Value=,Cust2=,Cust2Value=,Cust3=,Cust3Value=,AcntFirst4=4240,TaxAmount=0.00</ExtData>
-        <EMVData>AID=A0000000031010,AppName=VISA DEBIT,TVR=8080008800,TSI=6800,IAD=3078F1B9AD6222CF3030,ARC=00</EMVData>
-        <Receipt>Merchant</Receipt>
-        <CVMResult>2</CVMResult>
-        </response>
-        </xmp>
-        `
-        },
-        "tip": {
-          "amount": 3.25,
-          "user": "",
-          "approvalCode": ""
-        }
+      ]
     }
   }
 
