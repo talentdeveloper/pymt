@@ -78,6 +78,7 @@ DROP TABLE IF EXISTS `cart`;
 CREATE TABLE `cart` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `cart_number` int(11) DEFAULT NULL,
+  `status` varchar(45) DEFAULT NULL,
   `table_id` int(11) DEFAULT NULL,
   `order_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -85,7 +86,7 @@ CREATE TABLE `cart` (
   KEY `cart_order_id_order_idx` (`order_id`),
   CONSTRAINT `cart_order_id_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`) ON DELETE CASCADE,
   CONSTRAINT `cart_table_id_table` FOREIGN KEY (`table_id`) REFERENCES `table` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -246,7 +247,7 @@ CREATE TABLE `items` (
   PRIMARY KEY (`id`),
   KEY `item_account_id_account_idx` (`account_id`),
   CONSTRAINT `item_account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -310,7 +311,7 @@ CREATE TABLE `order` (
   KEY `cash_id_idx` (`cash_id`),
   CONSTRAINT `order_account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE,
   CONSTRAINT `order_cash_id_cash` FOREIGN KEY (`cash_id`) REFERENCES `cash` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -335,7 +336,7 @@ CREATE TABLE `order_item` (
   KEY `order_item_item_id_item_idx` (`item_id`),
   CONSTRAINT `order_item_item_id_item` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`),
   CONSTRAINT `order_item_order_id_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -348,10 +349,15 @@ DROP TABLE IF EXISTS `order_modifier`;
 CREATE TABLE `order_modifier` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `order_id` int(11) NOT NULL,
+  `order_item_id` int(11) DEFAULT NULL,
   `name` varchar(100) DEFAULT NULL,
   `value` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`id`),
+  KEY `order_modifier_order_id_order_idx` (`order_id`),
+  KEY `order_modifier_item_id_order_item_idx` (`order_item_id`),
+  CONSTRAINT `order_modifier_item_id_order_item` FOREIGN KEY (`order_item_id`) REFERENCES `order_item` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `order_modifier_order_id_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -395,7 +401,7 @@ CREATE TABLE `table` (
   PRIMARY KEY (`id`),
   KEY `table_order_id_order_idx` (`order_id`),
   CONSTRAINT `table_order_id_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -467,4 +473,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-05-29 22:43:11
+-- Dump completed on 2018-06-01  0:04:17

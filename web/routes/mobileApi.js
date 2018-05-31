@@ -38,14 +38,19 @@ router.post('/api/item/post/modifiers/create', modifier.create)
 router.post('/api/item/post/modifiers/edit/:id', modifier.update)
 
 // Order
-router.get('/api/history/get/allOrders', order.index)
+router.post('/api/carts/post/cart', order.create)
+router.get('/api/carts/get/carts', order.index)
+
+// router.get('/api/history/get/allOrders', order.index)
 router.get('/api/history/get/allOrders/simple', order.simple)
 router.get('/api/history/get/order/:id', order.edit)
-router.post('/api/payment/post', order.create)
-router.post('/api/payment/post/manual', order.payment)
 router.post('/api/history/post/order/:id/status', order.update)
 router.get('/api/history/get/orderTotals/:from/:to', order.totals)
 router.get('/api/history/get/allTips/:from/:to', order.tips)
+
+// Payment
+// router.post('/api/payment/post', order.create)
+router.post('/api/payment/post/manual', order.payment)
 router.post('/api/receipt/:contact', receipt.send)
 router.get('/api/receipt/:order/:contact', receipt.deliver)
 

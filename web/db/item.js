@@ -42,8 +42,6 @@ function getAllItems(account_id, callback) {
     if(err) callback(err, result)
     if(!result || !result.length) return callback(err, result)
     else {
-      console.log('--------- get all items in db------------')
-      console.log(result)
       var firstItem = setItemValues(result[0])
       var items = [firstItem]
       for(var i in result) {
