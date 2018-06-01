@@ -12,27 +12,35 @@ function index(req, res) {
     })
   }
   var jwtToken = auth.split(' ')[1]
-  var currentUser = jwt.verify(jwtToken, config.secret)
-  var { getAllItems } = require('../db/item')
+  try {
+    var currentUser = jwt.verify(jwtToken, config.secret)
+    var { getAllItems } = require('../db/item')
 
-  getAllItems(currentUser.accountId, (err, result)=> {
-    if(err) {
-      return res.status(400).json({
-        success: false,
-        message: err.message,
-        status: 400
+    getAllItems(currentUser.accountId, (err, result)=> {
+      if(err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+          status: 400
+        })
+      }
+      var items = {
+        allItems: result
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Item list',
+        data: items,
+        status: 200
       })
-    }
-    var items = {
-      allItems: result
-    }
-    return res.status(200).json({
-      success: true,
-      message: 'Item list',
-      data: items,
-      status: 200
     })
-  })
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+      status: 400
+    })
+  }
   // var items = { allItems: [
   //       {
   //         "itemId": 0,

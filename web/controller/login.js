@@ -35,7 +35,7 @@ function login(req, res) {
       'roleName': user.role
     }
     var token = jwt.sign(data, config.secret, {
-        expiresIn: 5000
+      expiresIn: 5000 //seconds
     });
     data.token = token
     return res.status(200).json({

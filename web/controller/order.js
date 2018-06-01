@@ -13,26 +13,32 @@ function index(req, res) {
     })
   }
   var jwtToken = auth.split(' ')[1]
-  var currentUser = jwt.verify(jwtToken, config.secret)
-  var { getAllOrder } = require('../db/order')
+  try {
+    var currentUser = jwt.verify(jwtToken, config.secret)
+    var { getAllOrder } = require('../db/order')
 
-  getAllOrder(currentUser.accountId, (err, orders)=> {
-    if(err) {
-      return res.status(400).json({
-        success: false,
-        message: err.message,
-        status: 400
+    getAllOrder(currentUser.accountId, (err, orders)=> {
+      if(err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+          status: 400
+        })
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Order list',
+        data: orders,
+        status: 200
       })
-    }
-    return res.status(200).json({
-      success: true,
-      message: 'Order list',
-      data: orders,
-      status: 200
     })
-  })
-
-
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+      status: 400
+    })
+  }
 }
 
 function simple(req, res) {
@@ -126,66 +132,75 @@ function create(req, res) {
     })
   }
   var jwtToken = auth.split(' ')[1]
-  var currentUser = jwt.verify(jwtToken, config.secret)
-  var { createOrder } = require('../db/order')
+  try {
+    var currentUser = jwt.verify(jwtToken, config.secret)
+    var { createOrder } = require('../db/order')
 
-  var payload = req.body
-  // fake payload
-  // payload = {
-  //   "cartNumber": Math.floor(Math.random(10)*30000), //cartNumber is unique across platform assigned new if null
-  //   "status": "UNPAID",
-  //   "tableId": "1",
-  //   "orderObj": {
-  //     "orderDate": moment(new Date("2018-05-21T22:14:05.255Z")).format('YYYY-MM-DD HH:mm:ss'),
-  //     "orderType": 'CASH_ON_DELIVERY',
-  //     "tableNumber": 12,
-  //     "transactionId": Math.floor(Math.random(10)*30000), //cartNumber is unique across platform assigned new if null
-  //     "orderStatus": "CART",
-  //     "cartTotal": 7.34,
-  //     "discountPercent": "0",
-  //     "discountAmount": 0,
-  //     "itemQuantity": 5,
-  //     "items": [
-  //       {
-  //         "itemId": 40,
-  //         "name": "Cheeseburger Small",
-  //         "price": 3.00,
-  //         "quantity": 1,
-  //         "isTaxable": false,
-  //         "isEBT": true,
-  //         "isFSA": true,
-  //         "modifiers": {
-  //         "Cheese": 0.5,
-  //         "Tomato": 0
-  //         }
-  //       },
-  //       {
-  //         "itemId": 41,
-  //         "name": "Cheeseburger Medium",
-  //         "price": 4.00,
-  //         "quantity": 2,
-  //         "isTaxable": true,
-  //         "isEBT": false,
-  //         "isFSA": false,
-  //         "modifiers": {}
-  //       },
-  //     ]
-  //   }
-  // }
-  createOrder(payload, currentUser.accountId, (err, result)=>{
-    if(err) {
-      return res.status(400).json({
-        success: false,
-        message: err.message,
-        status: 400
+    var payload = req.body
+    // fake payload
+    // payload = {
+    //   "cartNumber": Math.floor(Math.random(10)*30000), //cartNumber is unique across platform assigned new if null
+    //   "status": "UNPAID",
+    //   "tableId": "1",
+    //   "orderObj": {
+    //     "orderDate": moment(new Date("2018-05-21T22:14:05.255Z")).format('YYYY-MM-DD HH:mm:ss'),
+    //     "orderType": 'CASH_ON_DELIVERY',
+    //     "tableNumber": 12,
+    //     "transactionId": Math.floor(Math.random(10)*30000), //cartNumber is unique across platform assigned new if null
+    //     "orderStatus": "CART",
+    //     "cartTotal": 7.34,
+    //     "discountPercent": "0",
+    //     "discountAmount": 0,
+    //     "itemQuantity": 5,
+    //     "items": [
+    //       {
+    //         "itemId": 40,
+    //         "name": "Cheeseburger Small",
+    //         "price": 3.00,
+    //         "quantity": 1,
+    //         "isTaxable": false,
+    //         "isEBT": true,
+    //         "isFSA": true,
+    //         "modifiers": {
+    //         "Cheese": 0.5,
+    //         "Tomato": 0
+    //         }
+    //       },
+    //       {
+    //         "itemId": 41,
+    //         "name": "Cheeseburger Medium",
+    //         "price": 4.00,
+    //         "quantity": 2,
+    //         "isTaxable": true,
+    //         "isEBT": false,
+    //         "isFSA": false,
+    //         "modifiers": {}
+    //       },
+    //     ]
+    //   }
+    // }
+    createOrder(payload, currentUser.accountId, (err, result)=>{
+      if(err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+          status: 400
+        })
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Order created successfully',
+        status: 200
       })
-    }
-    return res.status(200).json({
-      success: true,
-      message: 'Order created successfully',
-      status: 200
     })
-  })
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+      status: 400
+    })
+  }
+
 }
 
 function update(req, res) {

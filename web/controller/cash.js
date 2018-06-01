@@ -20,30 +20,38 @@ function openDay(req, res) {
     })
   }
   var jwtToken = auth.split(' ')[1]
-  var currentUser = jwt.verify(jwtToken, config.secret)
-  if(currentUser.role > 2) {
-    return res.status(401).json({
-      success: false,
-      message: 'Permission denied',
-      status: 401
-    })
-  }
-  var { createCashOpen } = require('../db/cash')
-
-  createCashOpen(payload.openingAmount, currentUser.accountId, currentUser.userId, (err, result)=> {
-    if(err) {
-      return res.status(400).json({
+  try {
+    var currentUser = jwt.verify(jwtToken, config.secret)
+    if(currentUser.role > 2) {
+      return res.status(401).json({
         success: false,
-        message: err.message,
-        status: 400
+        message: 'Permission denied',
+        status: 401
       })
     }
-    return res.status(200).json({
-      success: true,
-      message: 'Day open success',
-      status: 200
+    var { createCashOpen } = require('../db/cash')
+
+    createCashOpen(payload.openingAmount, currentUser.accountId, currentUser.userId, (err, result)=> {
+      if(err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+          status: 400
+        })
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Day open success',
+        status: 200
+      })
     })
-  })
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+      status: 400
+    })
+  }
 }
 
 function closeDay(req, res) {
@@ -64,32 +72,41 @@ function closeDay(req, res) {
     })
   }
   var jwtToken = auth.split(' ')[1]
-  var currentUser = jwt.verify(jwtToken, config.secret)
-  if(currentUser.role > 2) {
-    return res.status(401).json({
-      success: false,
-      message: 'Permission denied',
-      status: 401
-    })
-  }
-  var { updateCashClose } = require('../db/cash')
-
-  var sales_amount = 1000 // fake sales amount
-  var total_drop_amount = 400 // fake total drop amount
-  updateCashClose(payload.closingAmount, sales_amount, total_drop_amount, currentUser.accountId, currentUser.userId, (err, result)=> {
-    if(err) {
-      return res.status(400).json({
+  try {
+    var currentUser = jwt.verify(jwtToken, config.secret)
+    if(currentUser.role > 2) {
+      return res.status(401).json({
         success: false,
-        message: err.message,
-        status: 400
+        message: 'Permission denied',
+        status: 401
       })
     }
-    return res.status(200).json({
-      success: true,
-      message: 'Day close success',
-      status: 200
+    var { updateCashClose } = require('../db/cash')
+
+    var sales_amount = 1000 // fake sales amount
+    var total_drop_amount = 400 // fake total drop amount
+    updateCashClose(payload.closingAmount, sales_amount, total_drop_amount, currentUser.accountId, currentUser.userId, (err, result)=> {
+      if(err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+          status: 400
+        })
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Day close success',
+        status: 200
+      })
     })
-  })
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+      status: 400
+    })
+  }
+
 }
 
 function setEODTillAmount(req, res) {
@@ -110,31 +127,40 @@ function setEODTillAmount(req, res) {
     })
   }
   var jwtToken = auth.split(' ')[1]
-  var currentUser = jwt.verify(jwtToken, config.secret)
-  if(currentUser.role > 2) {
-    return res.status(401).json({
-      success: false,
-      message: 'Permission denied',
-      status: 401
-    })
-  }
-  var { endDay } = require('../db/cash')
-
-  endDay(payload.tillAmount, currentUser.accountId, currentUser.userId, (err, result)=> {
-    if(err) {
-      return res.status(400).json({
+  try {
+    var currentUser = jwt.verify(jwtToken, config.secret)
+    if(currentUser.role > 2) {
+      return res.status(401).json({
         success: false,
-        message: err.message,
-        status: 400
+        message: 'Permission denied',
+        status: 401
       })
     }
-    // Generate cash report and send email
-    return res.status(200).json({
-      success: true,
-      message: 'Till amount set success and generated cash report',
-      status: 200
+    var { endDay } = require('../db/cash')
+
+    endDay(payload.tillAmount, currentUser.accountId, currentUser.userId, (err, result)=> {
+      if(err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+          status: 400
+        })
+      }
+      // Generate cash report and send email
+      return res.status(200).json({
+        success: true,
+        message: 'Till amount set success and generated cash report',
+        status: 200
+      })
     })
-  })
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+      status: 400
+    })
+  }
+
 }
 
 function safeDrop(req, res) {
@@ -155,30 +181,39 @@ function safeDrop(req, res) {
     })
   }
   var jwtToken = auth.split(' ')[1]
-  var currentUser = jwt.verify(jwtToken, config.secret)
-  if(currentUser.role > 2) {
-    return res.status(401).json({
-      success: false,
-      message: 'Permission denied',
-      status: 401
-    })
-  }
-  var { dropCash } = require('../db/cash')
-
-  dropCash(payload.dropAmount, currentUser.accountId, currentUser.userId, (err, result)=> {
-    if(err) {
-      return res.status(400).json({
+  try {
+    var currentUser = jwt.verify(jwtToken, config.secret)
+    if(currentUser.role > 2) {
+      return res.status(401).json({
         success: false,
-        message: err.message,
-        status: 400
+        message: 'Permission denied',
+        status: 401
       })
     }
-    return res.status(200).json({
-      success: true,
-      message: 'Cash drop success',
-      status: 200
+    var { dropCash } = require('../db/cash')
+
+    dropCash(payload.dropAmount, currentUser.accountId, currentUser.userId, (err, result)=> {
+      if(err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+          status: 400
+        })
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Cash drop success',
+        status: 200
+      })
     })
-  })
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+      status: 400
+    })
+  }
+
 }
 
 function drops(account_id, callback) {
@@ -219,27 +254,36 @@ function getCurrentCashDrops(req, res) {
     })
   }
   var jwtToken = auth.split(' ')[1]
-  var currentUser = jwt.verify(jwtToken, config.secret)
-  if(currentUser.role > 2) {
-    return res.status(401).json({
-      success: false,
-      message: 'Permission denied',
-      status: 401
+  try {
+    var currentUser = jwt.verify(jwtToken, config.secret)
+    if(currentUser.role > 2) {
+      return res.status(401).json({
+        success: false,
+        message: 'Permission denied',
+        status: 401
+      })
+    }
+    drops(currentUser.accountId, (err, data)=>{
+      if(err) return res.status(400).json({
+        success: false,
+        message: err.message,
+        status: 400
+      })
+      return res.status(200).json({
+        success: true,
+        message: 'Current cash drops',
+        data: data.data,
+        status: 200
+      })
     })
-  }
-  drops(currentUser.accountId, (err, data)=>{
-    if(err) return res.status(400).json({
+  } catch (err) {
+    return res.status(400).json({
       success: false,
       message: err.message,
       status: 400
     })
-    return res.status(200).json({
-      success: true,
-      message: 'Current cash drops',
-      data: data.data,
-      status: 200
-    })
-  })
+  }
+
 }
 
 function getClosing(req, res) {
@@ -252,37 +296,46 @@ function getClosing(req, res) {
     })
   }
   var jwtToken = auth.split(' ')[1]
-  var currentUser = jwt.verify(jwtToken, config.secret)
-  if(currentUser.role > 2) {
-    return res.status(401).json({
-      success: false,
-      message: 'Permission denied',
-      status: 401
-    })
-  }
-  var { getClosingAmounts } = require('../db/cash')
+  try {
+    var currentUser = jwt.verify(jwtToken, config.secret)
+    if(currentUser.role > 2) {
+      return res.status(401).json({
+        success: false,
+        message: 'Permission denied',
+        status: 401
+      })
+    }
+    var { getClosingAmounts } = require('../db/cash')
 
-  drops(currentUser.accountId, (err, data)=>{
-    if(err) return res.status(400).json({
+    drops(currentUser.accountId, (err, data)=>{
+      if(err) return res.status(400).json({
+        success: false,
+        message: err.message,
+        status: 400
+      })
+      var closing_amount = 2000 // fake closing
+      var last_update = new Date() // fake last update date
+      var closingAmount = {
+        "currentOpeningAmount": data.cash.opening_amount,
+        "currentClosingAmount": closing_amount,
+        "lastUpdate": last_update,
+        "cashDrop": data.data
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Current closing amount',
+        data: closingAmount,
+        status: 200
+      })
+    })
+  } catch (err) {
+    return res.status(400).json({
       success: false,
       message: err.message,
       status: 400
     })
-    var closing_amount = 2000 // fake closing
-    var last_update = new Date() // fake last update date
-    var closingAmount = {
-      "currentOpeningAmount": data.cash.opening_amount,
-      "currentClosingAmount": closing_amount,
-      "lastUpdate": last_update,
-      "cashDrop": data.data
-    }
-    return res.status(200).json({
-      success: true,
-      message: 'Current closing amount',
-      data: closingAmount,
-      status: 200
-    })
-  })
+  }
+
 }
 
 

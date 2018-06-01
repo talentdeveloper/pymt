@@ -7,6 +7,13 @@ function getUserRoles(callback) {
   });
 }
 
+function getAllUsers(account_id, callback) {
+  var sql = `select * from users where account_id = ${account_id}`
+  connection.query(sql, function(err, result) {
+    callback(err, result)
+  });
+}
+
 function createUser(user, callback) {
   var sql = `
   insert into users (first_name, last_name, email, pin, role_id, auth0_user_id, account_id)
@@ -53,5 +60,6 @@ module.exports = {
   createUser,
   editUser,
   deleteUser,
-  loginUser
+  loginUser,
+  getAllUsers
 }
