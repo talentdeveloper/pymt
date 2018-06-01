@@ -20,7 +20,20 @@ function index(req, res) {
       "userPin": "1234",
       "role": "owner",
       "merchantId": 98989,
-      "deviceSettings": "UUID",
+      "deviceSettings": {
+        "1": {
+          "UUID": "",
+          "printer": "",
+          "kds": "",
+          "kitchenPrinter": "",
+        },
+        "2": {
+          "UUID": "",
+          "printer": "",
+          "kds": "",
+          "kitchenPrinter": "",
+        },
+      },
       "preferences": {
         "tipsEnabled": "true",
         "barTab": "true",
@@ -84,7 +97,20 @@ function index(req, res) {
       "userPin": "1234",
       "role": "owner",
       "merchantId": 98989,
-      "deviceSettings": "UUID",
+      "deviceSettings": {
+        "1": {
+          "UUID": "",
+          "printer": "",
+          "kds": "",
+          "kitchenPrinter": "",
+        },
+        "2": {
+          "UUID": "",
+          "printer": "",
+          "kds": "",
+          "kitchenPrinter": "",
+        },
+      },
       "preferences": {
         "tipsEnabled": "true",
         "barTab": "true",
@@ -160,7 +186,20 @@ function edit(req, res) {
     "userPin": "1234",
     "role": "owner",
     "merchantId": 98989,
-    "deviceSettings": "UUID",
+    "deviceSettings": {
+      "1": {
+        "UUID": "",
+        "printer": "",
+        "kds": "",
+        "kitchenPrinter": "",
+      },
+      "2": {
+        "UUID": "",
+        "printer": "",
+        "kds": "",
+        "kitchenPrinter": "",
+      },
+    },
     "preferences": {
       "tipsEnabled": "true",
       "barTab": "true",
@@ -219,6 +258,18 @@ function edit(req, res) {
 }
 
 function create(req, res) {
+  var auth = req.headers.authorization
+  if(!auth || auth.indexOf('Bearer ') !== 0) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized request',
+      status: 401
+    })
+  }
+  var jwtToken = auth.split(' ')[1]
+  var currentUser = jwt.verify(jwtToken, config.secret)
+  var { createAccount } = require('../db/account')
+
   var payload = req.body
   // fake load
   payload = {
@@ -234,8 +285,21 @@ function create(req, res) {
     "accountId": 1234,
     "userPin": "1234",
     "role": "owner",
-    "merchantId": 98989,
-    "deviceSettings": "UUID",
+    "merchantId": Math.floor(Math.random(Date.now())*100000),
+    "deviceSettings": {
+      "1": {
+        "UUID": "",
+        "printer": "",
+        "kds": "",
+        "kitchenPrinter": "",
+      },
+      "2": {
+        "UUID": "",
+        "printer": "",
+        "kds": "",
+        "kitchenPrinter": "",
+      },
+    },
     "preferences": {
       "tipsEnabled": "true",
       "barTab": "true",
@@ -250,6 +314,29 @@ function create(req, res) {
       "giftCards": "true",
       "cashDiscount": "true"
     },
+    "categories": [
+      {
+       "categoryId": 0,
+       "categoryName": "Shirts",
+       "shortName": "Sh",
+       "categoryColor": "yellow",
+       "image": "data:image/jpeg;base64,/9j/4RiDRXhpZgAATU0AKgA"
+     },
+     {
+       "categoryId": 0,
+       "categoryName": "Pants",
+       "shortName": "Pa",
+       "categoryColor": "blue",
+       "image": "data:image/jpeg;base64,/9j/4RiDRXhpZgAATU0AKgA"
+     },
+     {
+       "categoryId": 0,
+       "categoryName": "Accessories",
+       "shortName": "Ac",
+       "categoryColor": "purple",
+       "image": "data:image/jpeg;base64,/9j/4RiDRXhpZgAATU0AKgA"
+     }
+    ],
      "accountUsers": [
       {
         "firstName": "Matthew",
@@ -262,11 +349,21 @@ function create(req, res) {
     ]
   }
 
-  return res.status(200).json({
-    success: true,
-    message: 'Account created successfully',
-    status: 200
+  createAccount(payload, (err, result)=>{
+    if(err) {
+      return res.status(400).json({
+        success: false,
+        message: err.message,
+        status: 400
+      })
+    }
+    return res.status(200).json({
+      success: true,
+      message: 'Account created successfully',
+      status: 200
+    })
   })
+
 }
 
 
