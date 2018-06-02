@@ -39,16 +39,17 @@ function deleteUser(auth0_user_id, callback) {
   });
 }
 
-function getAccountIdByUserId(auth0_user_id, callback) {
-  var sql = `select account_id from users where auth0_user_id = '${auth0_user_id}'`
+function getAccountInfoByAuth0UserId(auth0_user_id, callback) {
+  var sql = `select u.*, a.account_no, r.name role_name from users u inner join user_role r inner join account a
+  where auth0_user_id = '${auth0_user_id}' and r.id = u.role_id and a.id = u.account_id`
   connection.query(sql, function(err, result) {
     callback(err, result)
   });
 }
 
 function loginUser(auth0_user_id, pin, callback) {
-  var sql = `select u.id user_id, u.account_id, r.id role_id, r.name role from users u inner join user_role r
-where auth0_user_id = '${auth0_user_id}' and pin = '${pin}' and r.id = u.role_id`
+  var sql = `select u.id user_id, u.account_id, a.account_no, r.id role_id, r.name role from users u inner join user_role r inner join account a
+where auth0_user_id = '${auth0_user_id}' and pin = '${pin}' and r.id = u.role_id and a.id = u.account_id`
   connection.query(sql, function(err, result) {
     callback(err, result)
   });
@@ -56,7 +57,7 @@ where auth0_user_id = '${auth0_user_id}' and pin = '${pin}' and r.id = u.role_id
 
 module.exports = {
   getUserRoles,
-  getAccountIdByUserId,
+  getAccountInfoByAuth0UserId,
   createUser,
   editUser,
   deleteUser,

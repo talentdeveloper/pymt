@@ -1,34 +1,102 @@
 var connection = require('../config/connection.js');
 
-function getAllModifier(account_id, callback) {
-  var sql = `select * from modifier where account_id = ${account_id}`
-  connection.query(sql, function(err, result) {
-    callback(err, result)
-  });
+function setItemValues(item) {
+  var modifier = {
+    "modifierId": item.modifier_id,
+    "modifierName": item.modifier_name,
+    "modifiers": {
+
+    }
+  }
+  modifier.modifiers[item.attribute] = item.value
+  return modifier
 }
 
-function editModifier(modifier_id, callback) {
-  var sql = `select * from modifier where id = ${modifier_id}`
+function getAllModifier(account_id, modifier_id, callback) {
+  var sql = `select m.id modifier_id, m.name modifier_name, a.name attribute, a.value from modifier m
+  left outer join modifier_attribute a on m.id = a.modifier_id where account_id = ${account_id}`
+
+  if(modifier_id) sql += ` and m.id = '${modifier_id}'`
+
   connection.query(sql, function(err, result) {
-    callback(err, result)
+    if(err) callback(err, result)
+    if(!result || !result.length) return callback(err, result)
+    else {
+      var modifiers = [setItemValues(result[0])]
+      for(var i = 0; i < result.length; i++) {
+        var modifier = result[i+1]
+        if(!modifier) break;
+        var lastItem = modifiers[modifiers.length -1]
+        if(lastItem.modifierId === modifier.modifier_id) {
+          lastItem.modifiers[modifier.attribute] = modifier.value
+        } else {
+          modifiers.push(setItemValues(modifier))
+        }
+      }
+      callback(null, modifiers)
+    }
   });
 }
 
 function createModifier(modifier, callback) {
-  var sql = `insert into modifier (name, short_name, color, image, active, account_id)
-  values ('${modifier.name}', '${modifier.short_name}', '${modifier.color}', '${modifier.image}',
-  ${modifier.active}, ${modifier.account_id})`
+  var sql = `insert into modifier (name, account_id) values ('${modifier.modifierName}', ${modifier.account_id})`
   connection.query(sql, function(err, result) {
-    callback(err, result)
+    if(err) callback(err, result)
+    else {
+      var modifiers = modifier.modifiers
+      var mods = Object.keys(modifiers)
+
+      var addModifire = () => {
+        var key = mods.shift()
+        var value = modifiers[key]
+        sql = `insert into modifier_attribute (modifier_id, name, value)
+        values (${result.insertId}, '${key}', '${value}')`
+        connection.query(sql, function(err, result) {
+          if(err) callback(err, null)
+          else {
+            if(mods.length) addModifire()
+            else {
+              callback(err, result)
+            }
+          }
+        })
+      }
+      addModifire()
+    }
   });
 }
 
 function updateModifier(modifier, callback) {
-  var sql = `update modifier set name = '${modifier.name}', short_name = '${modifier.short_name}',
-  color = '${modifier.color}', image = '${modifier.image}', active = ${modifier.active}
-  where id = ${modifier.id} and account_id = ${modifier.account_id}`
+  var sql = `update modifier set name = '${modifier.modifierName}' where id = ${modifier.id} and account_id = ${modifier.account_id}`
   connection.query(sql, function(err, result) {
-    callback(err, result)
+    if(err) callback(err, result)
+    else {
+      sql = `delete from modifier_attribute where modifier_id = ${modifier.id}`
+      connection.query(sql, function(err, result) {
+        if(err) callback(err, result)
+        else {
+          var modifiers = modifier.modifiers
+          var mods = Object.keys(modifiers)
+
+          var addModifire = () => {
+            var key = mods.shift()
+            var value = modifiers[key]
+            sql = `insert into modifier_attribute (modifier_id, name, value)
+            values (${modifier.id}, '${key}', '${value}')`
+            connection.query(sql, function(err, result) {
+              if(err) callback(err, null)
+              else {
+                if(mods.length) addModifire()
+                else {
+                  callback(err, result)
+                }
+              }
+            })
+          }
+          addModifire()
+        }
+      })
+    }
   });
 }
 
@@ -43,7 +111,6 @@ function getAllModifierWithItemId(account_id, callback) {
 
 module.exports = {
   getAllModifier,
-  editModifier,
   createModifier,
   updateModifier,
   getAllModifierWithItemId

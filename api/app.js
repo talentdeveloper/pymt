@@ -42,12 +42,17 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  // res.render('error');
+  return res.status(500).json({
+    success: false,
+    message: err.message,
+    status: 500
+  })
 });
 
 // Get token from Auth0
 var { getAuth0Token } = require('./helper')
-getAuth0Token();
+// getAuth0Token();
 
 module.exports = app;
 // run on terminal using below command

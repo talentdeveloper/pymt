@@ -1,8 +1,11 @@
 var connection = require('../config/connection.js');
 
-function getAllOrder(account_id, callback) {
+function getAllOrder(account_id, tran_id, callback) {
   var sql = `select c.id cart_id, c.cart_number, c.status, c.table_id cart_table_id, o.*
   from cart c inner join \`order\` o on o.id = c.order_id where account_id = ${account_id}`
+
+  if(tran_id) sql += ` and o.transaction_id = '${tran_id}'`
+
   connection.query(sql, function(err, result) {
     if(err) callback(err, null)
     else {
@@ -59,7 +62,7 @@ function getAllOrder(account_id, callback) {
             } else {
 
               var ids = _order.orderObj.items.map(it => it.orderItemId).join(', ')
-              var sql = `select * from order_modifier where order_id = ${_order.orderObj.orderId} and order_item_id in (${ids})`\
+              var sql = `select * from order_modifier where order_id = ${_order.orderObj.orderId} and order_item_id in (${ids})`
               connection.query(sql, function(err, orderItemModifiers) {
                 if(err) callback(err, null)
                 else {
@@ -85,8 +88,9 @@ function getAllOrder(account_id, callback) {
   });
 }
 
-function editOrder(order_id, callback) {
-  var sql = `select * from order where id = ${order_id}`
+function getOrdersByDateRange(account_id, from, to, callback) {
+  var sql = `select order_date, transaction_id, order_status, cart_total, discount_percent, discount_amount, item_quantity from \`order\`
+  where account_id = ${account_id} and order_date >= '${from}' and order_date <= '${to}'`
   connection.query(sql, function(err, result) {
     callback(err, result)
   });
@@ -183,9 +187,27 @@ function updateOrder(order, callback) {
   });
 }
 
+function getOrderInfoByTransactionId(account_id, transaction_id, callback) {
+  var sql = `select id order_id, cash_id from \`order\`
+  where account_id = ${account_id} and transaction_id = '${transaction_id}'`
+  connection.query(sql, function(err, result) {
+    callback(err, result)
+  });
+}
+
+function getOrderTotalsByDateRange(account_id, from, to, callback) {
+  var sql = `select order_date, sum(cart_total) orders_amount from \`order\`
+  where account_id = '${account_id}' and order_date >= '${from}' and order_date <= '${to}' group by order_date`
+  connection.query(sql, function(err, result) {
+    callback(err, result)
+  });
+}
+
 module.exports = {
   getAllOrder,
-  editOrder,
   createOrder,
-  updateOrder
+  updateOrder,
+  getOrderInfoByTransactionId,
+  getOrdersByDateRange,
+  getOrderTotalsByDateRange
 }

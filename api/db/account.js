@@ -7,8 +7,11 @@ function getAccountNames(callback) {
   });
 }
 
-function getAllAccounts(callback) {
+function getAllAccounts(account_id, user_id, callback) {
   var sql = 'select * from account'
+  if(account_id) sql += ` where id = '${account_id}'`
+  else if(user_id) sql += ` where id = (select account_id from users where id = ${user_id})`
+
   connection.query(sql, function(err, accounts) {
     if(err) callback(err, null)
     else {
@@ -68,7 +71,9 @@ function getAllAccounts(callback) {
                   account.userPin = owner.pin
                   account.role = owner.role_id
 
-                  account.accountUsers = users.splice(users.indexOf(owner), 1).map(user => ({
+                  users.splice(users.indexOf(owner), 1)
+
+                  account.accountUsers = users.map(user => ({
                     "firstName": user.first_name,
                     "lastName": user.last_name,
                     "emailAddress": user.email,
@@ -218,8 +223,47 @@ function createAccount(account, callback) {
   });
 }
 
+
+function updateAccount(account, callback) {
+  var sql = `update account set
+  account_no = '${account.accountId}',
+  phone_no = '${account.phoneNumber}',
+  address = '${account.physicalAddress}',
+  street = '${account.street2}',
+  city = '${account.city}',
+  state = '${account.state}',
+  zip = '${account.zip}',
+  country = 'China',
+  merchant_id = '${account.merchantId}',
+  device_settings = '${JSON.stringify(account.deviceSettings)}',
+  tip_enabled = ${account.tipsEnabled},
+  bar_tab = ${account.barTab},
+  tax_rate = ${account.taxRate},
+  signature_amount = ${account.signatureAmount},
+  cash_enabled = ${account.cashEnabled},
+  discount_enabled = ${account.discountEnabled},
+  fsa_enabled = ${account.FSAEnabled},
+  ebt_enabled = ${account.EBTEnabled},
+  table_tab = ${account.tableTab},
+  table_num = ${account.tableNum},
+  gift_cards = ${account.giftCards},
+  cash_discount = ${account.cashDiscount}
+  where id = ${account.id}`
+
+  connection.query(sql, function(err, createdAccount) {
+    if(err) callback(err, null)
+    else {
+
+      // Still in developing ... not yet done this
+      callback(err, createdAccount)
+    }
+  })
+
+}
+
 module.exports = {
   getAccountNames,
   getAllAccounts,
-  createAccount
+  createAccount,
+  updateAccount
 }

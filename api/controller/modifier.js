@@ -3,117 +3,178 @@ var connection = require('../config/connection.js');
 var jwt = require('jsonwebtoken');
 
 function index(req, res) {
-  var modifiers = { allModifiers: [
-    //this is an array of all modifierLists
-        {
-        "modifierId": 0,
-        "modifierName": "condiments",
-        "modifiers": {
-          "Cheese": 0.25,
-          "Lettuce": null,
-          "Tomato": null,
-          "Onion": null,
-          "Mayo": null,
-          "Ketchup": null,
-          "Mustard": null,
-          "Pickle": null
-          }
-        },
-        {
-        "modifierId": 1,
-        "modifierName": "extras",
-        "modifiers": {
-          "To Go": null,
-          "Pickup": null,
-          "Dine in": null,
-          }
-        }
-    ]
+  var auth = req.headers.authorization
+  if(!auth || auth.indexOf('Bearer ') !== 0) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized request',
+      status: 401
+    })
   }
-  return res.status(200).json({
-    success: true,
-    message: 'Modifier list',
-    data: modifiers,
-    status: 200
-  })
+  var jwtToken = auth.split(' ')[1]
+  try {
+    var currentUser = jwt.verify(jwtToken, config.secret)
+    var { getAllModifier } = require('../db/modifier')
+
+    getAllModifier(currentUser.accountId, null, (err, modifiers)=> {
+      if(err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+          status: 400
+        })
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Modifier list',
+        data: modifiers,
+        status: 200
+      })
+    })
+  } catch (err) {
+    console.error(err)
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+      status: 400
+    })
+  }
 }
 
 
 function edit(req, res) {
-  var id = req.params.id
-  var modifier = {
-    "modifierId": 0, //if new modifier system will generate with next sequential number
-    "modifierName": "condiments",
-    "modifiers": {
-      "Cheese": 0.25,
-      "Lettuce": null,
-      "Tomato": null,
-      "Onion": null,
-      "Mayo": null,
-      "Ketchup": null,
-      "Mustard": null,
-      "Pickle": null
-      }
+  var auth = req.headers.authorization
+  if(!auth || auth.indexOf('Bearer ') !== 0) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized request',
+      status: 401
+    })
   }
-  return res.status(200).json({
-    success: true,
-    message: 'Modifier by id',
-    data: modifier,
-    status: 200
-  })
+  var jwtToken = auth.split(' ')[1]
+  try {
+    var currentUser = jwt.verify(jwtToken, config.secret)
+    var { getAllModifier } = require('../db/modifier')
+    var modifier_id = req.params.id
+
+    getAllModifier(currentUser.accountId, modifier_id, (err, modifiers)=> {
+      if(err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+          status: 400
+        })
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Modifier by id',
+        data: modifiers[0],
+        status: 200
+      })
+    })
+  } catch (err) {
+    console.error(err)
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+      status: 400
+    })
+  }
 }
 
 function create(req, res) {
-  var payload = req.body
-  // fake load
-  payload = {
-    "modifierId": 0, //if new modifier system will generate with next sequential number
-    "modifierName": "condiments",
-    "modifiers": {
-      "Cheese": 0.25,
-      "Lettuce": null,
-      "Tomato": null,
-      "Onion": null,
-      "Mayo": null,
-      "Ketchup": null,
-      "Mustard": null,
-      "Pickle": null
-      }
+  var auth = req.headers.authorization
+  if(!auth || auth.indexOf('Bearer ') !== 0) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized request',
+      status: 401
+    })
   }
+  var jwtToken = auth.split(' ')[1]
+  try {
+    var currentUser = jwt.verify(jwtToken, config.secret)
+    var { createModifier } = require('../db/modifier')
 
-  return res.status(200).json({
-    success: true,
-    message: 'Modifier created successfully',
-    status: 200
-  })
+    var payload = req.body
+    payload.account_id = currentUser.accountId
+    createModifier(payload, (err, result)=>{
+      if(err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+          status: 400
+        })
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Modifier created successfully',
+        status: 200
+      })
+    })
+  } catch (err) {
+    console.error(err)
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+      status: 400
+    })
+  }
 }
 
 
 function update(req, res) {
-  var id = req.params.id
-  var payload = req.body
-
-  // fake modifier
-  payload = {
-    "modifierId": 0, //if new modifier system will generate with next sequential number
-    "modifierName": "condiments",
-    "modifiers": {
-      "Cheese": 0.25,
-      "Lettuce": null,
-      "Tomato": null,
-      "Onion": null,
-      "Mayo": null,
-      "Ketchup": null,
-      "Mustard": null,
-      "Pickle": null
-      }
+  var auth = req.headers.authorization
+  if(!auth || auth.indexOf('Bearer ') !== 0) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized request',
+      status: 401
+    })
   }
+  var jwtToken = auth.split(' ')[1]
+  try {
+    var currentUser = jwt.verify(jwtToken, config.secret)
+    var { updateModifier } = require('../db/modifier')
 
-  return res.status(200).json({
-    success: true,
-    message: 'Modifier updated successfully',
-    status: 200
-  })
+    var payload = req.body
+    //fale payload
+    // payload = {
+    //   "modifierName": "condiments",
+    //   "modifiers": {
+    //     "Lettuce": 2.2,
+    //     "Tomato": 1.4,
+    //     "Onion": 1.8,
+    //     "Ketchup": 0.85,
+    //     "Mustard": 1.99,
+    //     "Pickle": null
+    //     }
+    // }
+    payload.account_id = currentUser.accountId
+    payload.id = req.params.id
+
+    updateModifier(payload, (err, result)=>{
+      if(err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+          status: 400
+        })
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Modifier updated successfully',
+        status: 200
+      })
+    })
+  } catch (err) {
+    console.error(err)
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+      status: 400
+    })
+  }
 }
 
 

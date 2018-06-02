@@ -284,7 +284,7 @@ router.post('/login',function(req,res){
         "username": email,
         "password": password,
         "audience": config.audience,
-        "scope": "openid email",
+        "scope": "openid profile email",
         "client_id": config.client_id,
         "client_secret": config.client_secret
       },

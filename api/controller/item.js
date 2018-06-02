@@ -16,7 +16,7 @@ function index(req, res) {
     var currentUser = jwt.verify(jwtToken, config.secret)
     var { getAllItems } = require('../db/item')
 
-    getAllItems(currentUser.accountId, (err, result)=> {
+    getAllItems(currentUser.accountId, null, (err, result)=> {
       if(err) {
         return res.status(400).json({
           success: false,
@@ -35,194 +35,223 @@ function index(req, res) {
       })
     })
   } catch (err) {
+    console.error(err)
     return res.status(400).json({
       success: false,
       message: err.message,
       status: 400
     })
   }
-  // var items = { allItems: [
-  //       {
-  //         "itemId": 0,
-  //         "itemName": "",
-  //         "soldByWeight": "true",
-  //         "trackInventory": "",
-  //         "allowBackorder": "",
-  //         "isTaxable": "",
-  //         "isEBT": "",
-  //         "isFSA": "",
-  //         "selectors": {
-  //           "selectorId": 0,
-  //           "selectorName": "",
-  //           "details": [
-  //             {
-  //               "itemId": 0, // first item in selectors details is same as base item
-  //               "name": "small",
-  //               "price": 0,
-  //               "quantityRemaining": 0,
-  //               "itemWeight": 0
-  //             },
-  //             {
-  //               "itemId": 1,
-  //               "name": "medium",
-  //               "price": 0,
-  //               "quantityRemaining": 0,
-  //               "itemWeight": 0
-  //             },
-  //             {
-  //               "itemId": 2,
-  //               "name": "large",
-  //               "price": 0,
-  //               "quantityRemaining": 0,
-  //               "itemWeight": 0
-  //             }
-  //           ]
-  //         },
-  //         "modifiers": { "modifierList": 16, "modifierList": 1 },
-  //       },
-  //       {
-  //         "itemId": "",
-  //         "itemName": "",
-  //         "price": 0,
-  //         "hasWeight": "true",
-  //         "itemWeight": .5,
-  //         "trackInventory": "",
-  //         "quantityRemaining": 0,
-  //         "allowBackorder": "true",
-  //         "isTaxable": "true",
-  //         "isEBT": "false",
-  //         "isFSA": "false",
-  //         "selectors": {},
-  //         "modifiers": {},
-  //       }
-  //   ]
-  // }
 }
 
 
 function edit(req, res) {
-  var id = req.params.id
-
-  var item = {
-    "itemId": 0,
-    "itemName": "",
-    "soldByWeight": "true",
-    "trackInventory": "",
-    "allowBackorder": "",
-    "isTaxable": "",
-    "isEBT": "",
-    "isFSA": "",
-    "selectors": {
-      "selectorId": 0,
-      "selectorName": "",
-      "details": [
-        {
-          "itemId": 0, // first item in selectors details is same as base item
-          "name": "small",
-          "price": 0,
-          "quantityRemaining": 0,
-          "itemWeight": 0
-        },
-        {
-          "itemId": 1,
-          "name": "medium",
-          "price": 0,
-          "quantityRemaining": 0,
-          "itemWeight": 0
-        },
-        {
-          "itemId": 2,
-          "name": "large",
-          "price": 0,
-          "quantityRemaining": 0,
-          "itemWeight": 0
-        }
-      ]
-    },
-    "modifiers": { "modifierList": 16, "modifierList": 1 },
+  var auth = req.headers.authorization
+  if(!auth || auth.indexOf('Bearer ') !== 0) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized request',
+      status: 401
+    })
   }
+  var jwtToken = auth.split(' ')[1]
+  try {
+    var currentUser = jwt.verify(jwtToken, config.secret)
+    var { getAllItems } = require('../db/item')
+    var item_id = req.params.id
 
-  return res.status(200).json({
-    success: true,
-    message: 'Item by id',
-    data: item,
-    status: 200
-  })
+    getAllItems(currentUser.accountId, item_id, (err, items)=> {
+      if(err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+          status: 400
+        })
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Item by id',
+        data: items[0],
+        status: 200
+      })
+    })
+  } catch (err) {
+    console.error(err)
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+      status: 400
+    })
+  }
 }
 
 function create(req, res) {
-  var payload = req.body
-  // fake load
-  payload = {
-    "itemId": "", //if new item system will generate with next number and starts at 5 numbers long
-    "itemName": "",
-    "soldByWeight": "true",
-    "trackInventory": "",
-    "allowBackorder": "",
-    "isTaxable": "",
-    "isEBT": "",
-    "isFSA": "",
-    "selectors": {
-      "selectorId": 0,
-      "selectorName": "",
-      "details": [
-        {
-          "itemId": 0,
-          "name": null,
-          "cost": 0,
-          "price": 0,
-          "quantityRemaining": 0,
-          "itemWeight": 0
-        }
-      ]
-    },
-    "modifiers": { "modifierList": 16, "modifierList": 1 },
+  var auth = req.headers.authorization
+  if(!auth || auth.indexOf('Bearer ') !== 0) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized request',
+      status: 401
+    })
   }
+  var jwtToken = auth.split(' ')[1]
+  try {
+    var currentUser = jwt.verify(jwtToken, config.secret)
+    var { createItem } = require('../db/item')
+    var payload = req.body
+    // fake load
+    // payload = {
+    //   "itemName": "Pizza",
+    //   "image": "data:image/jpeg;base64,/9j/4RiDRXhpZgAATU0AKgA",
+    //   "soldByWeight": "true",
+    //   "trackInventory": "false",
+    //   "allowBackorder": true,
+    //   "isTaxable": true,
+    //   "isEBT": "false",
+    //   "isFSA": "false",
+    //   "selectors": {
+    //     "selectorId": 2,
+    //     "selectorName": "Pizza Hut",
+    //     "details": [
+    //       {
+    //         "name": "Chilli Pizza",
+    //         "cost": 9.3,
+    //         "price": 13.1,
+    //         "quantityRemaining": 11,
+    //         "itemWeight": 4.5
+    //       },
+    //       {
+    //         "name": "Pizza Prawn",
+    //         "cost": 11.15,
+    //         "price": 16.12,
+    //         "quantityRemaining": 10,
+    //         "itemWeight": 4.0
+    //       }
+    //     ]
+    //   },
+    //   "modifiers": [
+    //     {
+    //       "modifierId": 2,
+    //       "modifierName": "sausage",
+    //       "modifiers": {
+    //           "Chilli": "0.25",
+    //           "Garlic": "0.2",
+    //           "Tomato": "1",
+    //           "Carot": "1.5",
+    //           "Butter": "1.8"
+    //       }
+    //     }
+    //   ],
+    // }
+    payload.account_id = currentUser.accountId
 
-  return res.status(200).json({
-    success: true,
-    message: 'Item created successfully',
-    status: 200
-  })
+    createItem(payload, (err, result)=>{
+      if(err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+          status: 400
+        })
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Item created successfully',
+        status: 200
+      })
+    })
+  } catch (err) {
+    console.error(err)
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+      status: 400
+    })
+  }
 }
 
 
 function update(req, res) {
-  var id = req.params.id
-  var payload = req.body
-
-  // fake item
-  payload = {
-    "itemId": "12345", //if new item system will generate with next number and starts at 5 numbers long
-    "itemName": "",
-    "soldByWeight": "true",
-    "trackInventory": "",
-    "allowBackorder": "",
-    "isTaxable": "",
-    "isEBT": "",
-    "isFSA": "",
-    "selectors": {
-      "selectorId": 0,
-      "selectorName": "",
-      "details": [
-        {
-          "itemId": 0,
-          "name": null,
-          "cost": 0,
-          "price": 0,
-          "quantityRemaining": 0,
-          "itemWeight": 0
-        }
-      ]
-    },
-    "modifiers": { "modifierList": 16, "modifierList": 1 },
+  var auth = req.headers.authorization
+  if(!auth || auth.indexOf('Bearer ') !== 0) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized request',
+      status: 401
+    })
   }
-
-  return res.status(200).json({
-    success: true,
-    message: 'Item updated successfully',
-    status: 200
-  })
+  var jwtToken = auth.split(' ')[1]
+  try {
+    var currentUser = jwt.verify(jwtToken, config.secret)
+    var { updateItem } = require('../db/item')
+    var payload = req.body
+    // fake load
+    payload = {
+      "itemName": "Oishii",
+      "image": "data:image/jpeg;base64,/9j/4RiDRXhpZgAATU0AKgA",
+      "soldByWeight": "true",
+      "trackInventory": "false",
+      "allowBackorder": true,
+      "isTaxable": true,
+      "isEBT": "false",
+      "isFSA": "false",
+      "selectors": {
+        "selectorId": 2,
+        "selectorName": "Pizza Hut",
+        "details": [
+          {
+            "name": "Chilli Pizza",
+            "cost": 9.3,
+            "price": 13.1,
+            "quantityRemaining": 11,
+            "itemWeight": 4.5
+          },
+          {
+            "name": "Oishii Snack",
+            "cost": 11.15,
+            "price": 16.12,
+            "quantityRemaining": 10,
+            "itemWeight": 4.0
+          }
+        ]
+      },
+      "modifiers": [
+        {
+          "modifierId": 1,
+          "modifierName": "condiments",
+          "modifiers": {
+              "Chilli": "0.25",
+              "Garlic": "0.2",
+              "Tomato": "1",
+              "Carot": "1.5",
+              "Butter": "1.8"
+          }
+        }
+      ],
+    }
+    payload.account_id = currentUser.accountId
+    payload.id = req.params.id
+    updateItem(payload, (err, result)=>{
+      if(err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+          status: 400
+        })
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Item updated successfully',
+        status: 200
+      })
+    })
+  } catch (err) {
+    console.error(err)
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+      status: 400
+    })
+  }
 }
 
 

@@ -187,7 +187,7 @@ CREATE TABLE `item_detail` (
   PRIMARY KEY (`id`),
   KEY `item_id_item_idx` (`item_id`),
   CONSTRAINT `item_id_item` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -206,7 +206,7 @@ CREATE TABLE `item_modifier_map` (
   KEY `modifier_id_idx` (`modifier_id`),
   CONSTRAINT `item_id` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`) ON DELETE CASCADE,
   CONSTRAINT `modifier_id` FOREIGN KEY (`modifier_id`) REFERENCES `modifier` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -219,6 +219,7 @@ DROP TABLE IF EXISTS `items`;
 CREATE TABLE `items` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(120) NOT NULL,
+  `image` blob,
   `sold_by_weight` tinyint(4) DEFAULT NULL,
   `track_inventory` tinyint(4) DEFAULT NULL,
   `allow_backorder` tinyint(4) DEFAULT NULL,
@@ -231,7 +232,7 @@ CREATE TABLE `items` (
   PRIMARY KEY (`id`),
   KEY `item_account_id_account_idx` (`account_id`),
   CONSTRAINT `item_account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=52 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -248,7 +249,7 @@ CREATE TABLE `modifier` (
   PRIMARY KEY (`id`),
   KEY `modifier_account_id_account_idx` (`account_id`),
   CONSTRAINT `modifier_account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -266,7 +267,7 @@ CREATE TABLE `modifier_attribute` (
   PRIMARY KEY (`id`),
   KEY `modifier_attr_modifier_id_modifier_idx` (`modifier_id`),
   CONSTRAINT `modifier_attr_modifier_id_modifier` FOREIGN KEY (`modifier_id`) REFERENCES `modifier` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -355,6 +356,7 @@ CREATE TABLE `payment` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `order_id` int(11) DEFAULT NULL,
   `type` varchar(45) DEFAULT NULL,
+  `signature` blob,
   `amount_tendered` decimal(10,2) DEFAULT NULL,
   `change_given` decimal(10,2) DEFAULT NULL,
   `xmp` longtext,
@@ -367,7 +369,7 @@ CREATE TABLE `payment` (
   CONSTRAINT `cash_id_cash` FOREIGN KEY (`cash_id`) REFERENCES `cash` (`id`),
   CONSTRAINT `order_id_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`) ON DELETE CASCADE,
   CONSTRAINT `payment_account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -457,4 +459,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-06-02  0:41:18
+-- Dump completed on 2018-06-03  0:43:15

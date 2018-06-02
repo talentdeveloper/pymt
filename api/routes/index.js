@@ -1,6 +1,7 @@
 var express = require('express');
 var app = express();
 var router = express.Router();
+var { verifyAuth0Token } = require('../helper/auth0')
 // var multer = require('multer');
 // var path = require('path');
 
@@ -9,13 +10,19 @@ var category = require('../controller/category')
 var item = require('../controller/item')
 var modifier = require('../controller/modifier')
 var order = require('../controller/order')
-var receipt = require('../controller/receipt')
+var payment = require('../controller/payment')
 var cash = require('../controller/cash')
 var login = require('../controller/login')
+
+// Login
+router.post('/api/accounts/user/post/pin', login.login)
+// router.use(verifyAuth0Token)
+router.post('/api/accounts/user/post/pin/verified', login.login)
 
 // Account
 router.get('/api/accounts/get/accounts', account.index)
 router.get('/api/accounts/get/account/:id', account.edit)
+router.get('/api/accounts/get/account/user/:userId', account.edit)
 router.post('/api/accounts/post/create', account.create)
 router.post('/api/accounts/post/edit/:id', account.update)
 
@@ -27,7 +34,7 @@ router.post('/api/categories/post/edit/:id', category.update)
 
 // Item
 router.get('/api/items/get/items', item.index)
-router.get('/api/items/get/edit/:id', item.edit)
+router.get('/api/items/get/item/:id', item.edit)
 router.post('/api/items/post/create', item.create)
 router.post('/api/items/post/edit/:id', item.update)
 
@@ -41,21 +48,16 @@ router.post('/api/item/post/modifiers/edit/:id', modifier.update)
 router.post('/api/carts/post/cart', order.create)
 router.get('/api/carts/get/carts', order.index)
 
-// router.get('/api/history/get/allOrders', order.index)
-router.get('/api/history/get/allOrders/simple', order.simple)
-router.get('/api/history/get/order/:id', order.edit)
-router.post('/api/history/post/order/:id/status', order.update)
+router.get('/api/history/get/allOrders', order.orders)
+router.get('/api/history/get/allOrders/simple/byDate/:from/:to', order.report)
 router.get('/api/history/get/orderTotals/:from/:to', order.totals)
 router.get('/api/history/get/allTips/:from/:to', order.tips)
+router.get('/api/history/get/order/:id', order.edit)
+
 
 // Payment
-// router.post('/api/payment/post', order.create)
-router.post('/api/payment/post/manual', order.payment)
-router.post('/api/receipt/:contact', receipt.send)
-router.get('/api/receipt/:order/:contact', receipt.deliver)
-
-// Login
-router.post('/api/accounts/user/post/pin', login.login)
+router.post('/api/payment/post', payment.create)
+router.post('/api/receipt/:contact', payment.send)
 
 // Cash
 router.post('/api/manager/post/openingAmount', cash.openDay)
