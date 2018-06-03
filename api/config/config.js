@@ -6,7 +6,7 @@ module.exports = {
     "auth0_connection": "Username-Password-Authentication",
     "auth0_url": "https://pymt.au.auth0.com/", //"https://pymt.au.auth0.com/",
     "audience": "https://pymt.au.auth0.com/api/v2/", //"https://pymt.au.auth0.com/api/v2/",
-    "mailgun_apikey": "key-c5de7f1ec10c9154462cc3313f69f7e6",
+    "mailgun_apikey": process.env.mailgun_apikey,
     "mailgun_domain": "r.pymtpos.com",
     "mailgun_sender": "Pymt POS <no-reply@r.pymtpos.com>"
 };
