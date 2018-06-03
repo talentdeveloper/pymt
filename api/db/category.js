@@ -24,6 +24,7 @@ function createCategory(category, callback) {
 }
 
 function updateCategory(category, callback) {
+  category.active = typeof category.active === 'undefined' || category.active
   var sql = `update category set name = '${category.name}', short_name = '${category.short_name}',
   color = '${category.color}', image = '${category.image}', active = ${category.active}
   where id = ${category.id} and account_id = ${category.account_id}`

@@ -118,6 +118,13 @@ function create(req, res) {
   var jwtToken = auth.split(' ')[1]
   try {
     var currentUser = jwt.verify(jwtToken, config.secret)
+    if(currentUser.role > 2) {    //Owner = 1, Manage = 2, if not, Permission denined
+      return res.status(403).json({
+        success: false,
+        message: 'Permission denied',
+        status: 403
+      })
+    }
     var { createCategory } = require('../db/category')
 
     var payload = req.body
@@ -166,6 +173,13 @@ function update(req, res) {
   var jwtToken = auth.split(' ')[1]
   try {
     var currentUser = jwt.verify(jwtToken, config.secret)
+    if(currentUser.role > 2) {    //Owner = 1, Manage = 2, if not, Permission denined
+      return res.status(403).json({
+        success: false,
+        message: 'Permission denied',
+        status: 403
+      })
+    }
     var { updateCategory } = require('../db/category')
 
     var id = req.params.id

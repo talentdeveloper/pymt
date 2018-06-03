@@ -94,6 +94,13 @@ function create(req, res) {
   var jwtToken = auth.split(' ')[1]
   try {
     var currentUser = jwt.verify(jwtToken, config.secret)
+    if(currentUser.role > 2) {    //Owner = 1, Manage = 2, if not, Permission denined
+      return res.status(403).json({
+        success: false,
+        message: 'Permission denied',
+        status: 403
+      })
+    }
     var { createModifier } = require('../db/modifier')
 
     var payload = req.body
@@ -135,6 +142,13 @@ function update(req, res) {
   var jwtToken = auth.split(' ')[1]
   try {
     var currentUser = jwt.verify(jwtToken, config.secret)
+    if(currentUser.role > 2) {    //Owner = 1, Manage = 2, if not, Permission denined
+      return res.status(403).json({
+        success: false,
+        message: 'Permission denied',
+        status: 403
+      })
+    }
     var { updateModifier } = require('../db/modifier')
 
     var payload = req.body

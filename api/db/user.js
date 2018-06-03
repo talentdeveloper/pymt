@@ -25,15 +25,31 @@ function createUser(user, callback) {
   });
 }
 
-function editUser(auth0_user_id, callback) {
-  var sql = `select * from users where auth0_user_id = '${auth0_user_id}'`
+function editUser(user_id, callback) {
+  var sql = `select * from users where id = '${id}'`
   connection.query(sql, function(err, result) {
     callback(err, result)
   });
 }
 
-function deleteUser(auth0_user_id, callback) {
-  var sql = `delete from users where auth0_user_id = '${auth0_user_id}'`
+function updateUser(user, callback) {
+  var sql = `update users set first_name = '${user.first_name}', last_name = '${user.last_name}', email = '${user.email}',
+  pin = '${user.pin}', role_id = ${user.role_id} where account_id = ${user.account_id} and id = ${user.id}`
+  connection.query(sql, function(err, result) {
+    callback(err, result)
+  })
+}
+
+function updateUserByRoleOwner(user, callback) {
+  var sql = `update users set first_name = '${user.first_name}', last_name = '${user.last_name}', email = '${user.email}',
+  pin = '${user.pin}' where account_id = ${user.account_id} and role_id = ${user.role_id}`
+  connection.query(sql, function(err, result) {
+    callback(err, result)
+  })
+}
+
+function deleteUser(user_id, callback) {
+  var sql = `delete from users where auth0_user_id = '${user_id}'`
   connection.query(sql, function(err, result) {
     callback(err, result)
   });
@@ -45,6 +61,14 @@ function getAccountInfoByAuth0UserId(auth0_user_id, callback) {
   connection.query(sql, function(err, result) {
     callback(err, result)
   });
+}
+
+function getAuth0UserIdByUserId(account_id, user_id, role_id, callback) {
+  var sql = `select auth0_user_id from users where id = ${user_id} and account_id = ${account_id}`
+  if(role_id === 1) sql = `select auth0_user_id from users where role_id = ${role_id} and account_id = ${account_id}`
+  connection.query(sql, function(err, result) {
+    callback(err, result)
+  })
 }
 
 function loginUser(auth0_user_id, pin, callback) {
@@ -60,7 +84,10 @@ module.exports = {
   getAccountInfoByAuth0UserId,
   createUser,
   editUser,
+  updateUser,
   deleteUser,
   loginUser,
-  getAllUsers
+  getAllUsers,
+  updateUserByRoleOwner,
+  getAuth0UserIdByUserId
 }

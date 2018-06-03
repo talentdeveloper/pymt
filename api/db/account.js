@@ -178,7 +178,6 @@ function createAccount(account, callback) {
                 "emailAddress": account.emailAddress,
                 "password": account.password,
                 "userPin": account.userPin,
-                "userId": account.merchantId,
                 "role": account.role
               })
               var addUser = () => {
@@ -236,26 +235,95 @@ function updateAccount(account, callback) {
   country = 'China',
   merchant_id = '${account.merchantId}',
   device_settings = '${JSON.stringify(account.deviceSettings)}',
-  tip_enabled = ${account.tipsEnabled},
-  bar_tab = ${account.barTab},
-  tax_rate = ${account.taxRate},
-  signature_amount = ${account.signatureAmount},
-  cash_enabled = ${account.cashEnabled},
-  discount_enabled = ${account.discountEnabled},
-  fsa_enabled = ${account.FSAEnabled},
-  ebt_enabled = ${account.EBTEnabled},
-  table_tab = ${account.tableTab},
-  table_num = ${account.tableNum},
-  gift_cards = ${account.giftCards},
-  cash_discount = ${account.cashDiscount}
+  tip_enabled = ${account.preferences.tipsEnabled},
+  bar_tab = ${account.preferences.barTab},
+  tax_rate = ${account.preferences.taxRate},
+  signature_amount = ${account.preferences.signatureAmount},
+  cash_enabled = ${account.preferences.cashEnabled},
+  discount_enabled = ${account.preferences.discountEnabled},
+  fsa_enabled = ${account.preferences.FSAEnabled},
+  ebt_enabled = ${account.preferences.EBTEnabled},
+  table_tab = ${account.preferences.tableTab},
+  table_num = ${account.preferences.tableNum},
+  gift_cards = ${account.preferences.giftCards},
+  cash_discount = ${account.preferences.cashDiscount}
   where id = ${account.id}`
 
-  connection.query(sql, function(err, createdAccount) {
-    if(err) callback(err, null)
+  connection.query(sql, function(err, result) {
+    if(err) callback(err, result)
     else {
+      var updateAccountCategory = () => {
+        var category = account.categories.shift()
+        var { updateCategory } = require('./category')
+        category = {
+          name: category.categoryName,
+          short_name: category.shortName,
+          color: category.categoryColor,
+          image: category.image,
+          account_id: account.id,
+          id: category.categoryId
+        }
+        updateCategory(category, (err, result) => {
+          if(account.categories.length) updateAccountCategory()
+          else {
 
-      // Still in developing ... not yet done this
-      callback(err, createdAccount)
+            var owner = {
+              first_name: account.firstName,
+              last_name: account.lastName,
+              email: account.emailAddress,
+              password: account.password,
+              pin: account.userPin,
+              role_id: account.role,
+              account_id: account.id
+            }
+
+            var { updateAuth0User } = require('../helper/auth0')
+            updateAuth0User(owner, (err, result) => {
+              if(err) callback(err, result)
+              else {
+
+                var { updateUserByRoleOwner } = require('./user')
+                updateUserByRoleOwner(owner, (err, result) => {
+                  if(err) callback(err, result)
+                  else {
+                    var updateAccountUser = () => {
+                      var user = account.accountUsers.shift()
+                      user = {
+                        first_name: user.firstName,
+                        last_name: user.lastName,
+                        email: user.emailAddress,
+                        password: user.password,
+                        pin: user.userPin,
+                        role_id: user.role,
+                        id: user.userId,
+                        account_id: account.id
+                      }
+                      updateAuth0User(user, (err, result) => {
+                        if(err) callback(err, result)
+                        else {
+
+                          var { updateUser } = require('./user')
+                          updateUser(user, (err, result) => {
+                            if(err) callback(err, result)
+                            else {
+                              if(account.accountUsers.length) updateAccountUser()
+                              else callback(err, result)
+                            }
+                          })
+
+                        }
+                      })
+                    }
+                    updateAccountUser()
+                  }
+                })
+              }
+            })
+
+          }
+        })
+      }
+      updateAccountCategory()
     }
   })
 

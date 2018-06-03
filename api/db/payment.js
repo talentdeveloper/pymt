@@ -27,8 +27,24 @@ function createPayment(payment, callback) {
 
 }
 
+function getCurrentTotalSaleAmount(account_id, callback) {
+  var { checkDayOpened } = require('./cash')
+  checkDayOpened(account_id, (err, result) => {
+    var cash = result[0]
+    if(cash) {
+      sql = `select sum(amount_paid) total_sales_amount from payment where account_id = ${account_id} and cash_id = ${cash.id}`
+      connection.query(sql, function(err, result) {
+        callback(err, result)
+      });
+    } else {
+      callback(new Error('Day has not been opened yet. Open a day by entering opening amount.'), null)
+    }
+  })
+}
+
 
 module.exports = {
   getAllPayments,
-  createPayment
+  createPayment,
+  getCurrentTotalSaleAmount
 }

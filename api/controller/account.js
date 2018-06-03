@@ -220,9 +220,9 @@ function update(req, res) {
     var payload = req.body
     // fake load
     payload = {
-      "firstName": "Matthew",
-      "lastName": "Sheets",
-      "emailAddress": "matt@mattsheets.com",
+      "firstName": "Meter",
+      "lastName": "Bajen",
+      "emailAddress": "meter@mattsheets.com",
       "password": "Copyright@2018",
       "physicalAddress": "123 Main St",
       "street2": "Ste 100",
@@ -264,35 +264,35 @@ function update(req, res) {
       },
       "categories": [
         {
-         "categoryId": 0,
+         "categoryId": 50,
          "categoryName": "Shirts",
          "shortName": "Sh",
          "categoryColor": "yellow",
          "image": "data:image/jpeg;base64,/9j/4RiDRXhpZgAATU0AKgA"
        },
        {
-         "categoryId": 0,
+         "categoryId": 51,
          "categoryName": "Pants",
          "shortName": "Pa",
          "categoryColor": "blue",
          "image": "data:image/jpeg;base64,/9j/4RiDRXhpZgAATU0AKgA"
        },
        {
-         "categoryId": 0,
-         "categoryName": "Accessories",
-         "shortName": "Ac",
+         "categoryId": 52,
+         "categoryName": "Cosmetic",
+         "shortName": "Co",
          "categoryColor": "purple",
          "image": "data:image/jpeg;base64,/9j/4RiDRXhpZgAATU0AKgA"
        }
       ],
        "accountUsers": [
         {
-          "firstName": "Kthrine",
-          "lastName": "Zeta",
-          "emailAddress": "kettren@universalstudio.com",
+          "firstName": "Galli",
+          "lastName": "Leo",
+          "emailAddress": "gary@lunatic.com",
           "password": "Copyright@2018",
           "userPin": "1234",
-          "userId": 1234,
+          "userId": 31,
           "role": 2, //"Manager"
        }
       ]

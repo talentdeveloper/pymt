@@ -1,16 +1,9 @@
 var config = require('../config/config.js');
 var connection = require('../config/connection.js');
 var jwt = require('jsonwebtoken');
+var moment = require('moment');
 
 function openDay(req, res) {
-  var payload = req.body
-  // payload placeholder
-
-  // payload = {
-  //   "openingAmount": 455.99,
-  //   "updateTime": "2018-05-21T19:06:18.537Z",
-  //   "verifiedBy": "userId"
-  // }
   var auth = req.headers.authorization
   if(!auth || auth.indexOf('Bearer ') !== 0) {
     return res.status(401).json({
@@ -22,16 +15,37 @@ function openDay(req, res) {
   var jwtToken = auth.split(' ')[1]
   try {
     var currentUser = jwt.verify(jwtToken, config.secret)
-    if(currentUser.role > 2) {
-      return res.status(401).json({
+    if(currentUser.role > 2) {    //Owner = 1, Manage = 2, if not, Permission denined
+      return res.status(403).json({
         success: false,
         message: 'Permission denied',
-        status: 401
+        status: 403
       })
     }
     var { createCashOpen } = require('../db/cash')
+    var payload = req.body
+    // fake placeholder
+    payload = {
+      "openingAmount": 455.99,
+      "updateTime": "2018-05-21T19:06:18.537Z",
+      "verifiedBy": 23
+    }
+    var updateTime = moment(payload.updateTime)
+    if(!updateTime.isValid()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid updateTime format',
+        status: 400
+      })
+    }
+    var opening = {
+      opening_amount: payload.openingAmount,
+      opening_date: updateTime.format('YYYY-MM-DD HH:mm:ss'),
+      verify_by: payload.verifiedBy,
+      account_id: currentUser.accountId
+    }
 
-    createCashOpen(payload.openingAmount, currentUser.accountId, currentUser.userId, (err, result)=> {
+    createCashOpen(opening, (err, result)=> {
       if(err) {
         return res.status(400).json({
           success: false,
@@ -56,14 +70,6 @@ function openDay(req, res) {
 }
 
 function closeDay(req, res) {
-  var payload = req.body
-  // payload placeholder
-
-  // payload = {
-  // "closingAmount": 455.99,
-  // "updateTime": "2018-05-21T19:06:18.537Z",
-  // "verifiedBy": "userId"
-  // }
   var auth = req.headers.authorization
   if(!auth || auth.indexOf('Bearer ') !== 0) {
     return res.status(401).json({
@@ -75,31 +81,67 @@ function closeDay(req, res) {
   var jwtToken = auth.split(' ')[1]
   try {
     var currentUser = jwt.verify(jwtToken, config.secret)
-    if(currentUser.role > 2) {
-      return res.status(401).json({
+    if(currentUser.role > 2) {    //Owner = 1, Manage = 2, if not, Permission denined
+      return res.status(403).json({
         success: false,
         message: 'Permission denied',
-        status: 401
+        status: 403
       })
     }
-    var { updateCashClose } = require('../db/cash')
 
-    var sales_amount = 1000 // fake sales amount
-    var total_drop_amount = 400 // fake total drop amount
-    updateCashClose(payload.closingAmount, sales_amount, total_drop_amount, currentUser.accountId, currentUser.userId, (err, result)=> {
-      if(err) {
+    calculateClosing(currentUser.accountId, (err, result) => {
+      if(err) return res.status(400).json({
+        success: false,
+        message: err.message,
+        status: 400
+      })
+      var { updateCashClose } = require('../db/cash')
+      var payload = req.body
+      // fake payload
+      // payload = {
+      //   "closingAmount": 455.99,
+      //   "updateTime": "2018-05-21T19:06:18.537Z",
+      //   "verifiedBy": 23,
+      //   "cardAmount": 283848.92,
+      //   "cardBatchNumber": 2934785,
+      //   "cardTransactionCount": 83,
+      // }
+      var updateTime = moment(payload.updateTime)
+      if(!updateTime.isValid()) {
         return res.status(400).json({
           success: false,
-          message: err.message,
+          message: 'Invalid updateTime format',
           status: 400
         })
       }
-      return res.status(200).json({
-        success: true,
-        message: 'Day close success',
-        status: 200
+      var closing = {
+        closing_amount: result.currentClosingAmount,
+        eod_till_user_entry: payload.closingAmount,
+        card_amount: payload.cardAmount,
+        card_batch_number: payload.cardBatchNumber,
+        card_transaction_count: payload.cardTransactionCount,
+        sales_amount: result.totalSalesAmount,
+        total_drop_amount: result.totalDropsAmount,
+        account_id: currentUser.accountId,
+        verify_by: payload.verifiedBy,
+        closing_date: updateTime.format('YYYY-MM-DD HH:mm:ss')
+      }
+      updateCashClose(closing, (err, result)=> {
+        if(err) {
+          return res.status(400).json({
+            success: false,
+            message: err.message,
+            status: 400
+          })
+        }
+        return res.status(200).json({
+          success: true,
+          message: 'Day close success',
+          status: 200
+        })
       })
     })
+
   } catch (err) {
     console.error(err)
     return res.status(400).json({
@@ -131,11 +173,11 @@ function setEODTillAmount(req, res) {
   var jwtToken = auth.split(' ')[1]
   try {
     var currentUser = jwt.verify(jwtToken, config.secret)
-    if(currentUser.role > 2) {
-      return res.status(401).json({
+    if(currentUser.role > 2) {    //Owner = 1, Manage = 2, if not, Permission denined
+      return res.status(403).json({
         success: false,
         message: 'Permission denied',
-        status: 401
+        status: 403
       })
     }
     var { endDay } = require('../db/cash')
@@ -167,14 +209,6 @@ function setEODTillAmount(req, res) {
 }
 
 function safeDrop(req, res) {
-  var payload = req.body
-  // payload placeholder
-
-  // payload = {
-  // "dropAmount": 455.99,
-  // "dropTime": "2018-05-21T19:06:18.537Z",
-  // "dropBy": "userId"
-  // }
   var auth = req.headers.authorization
   if(!auth || auth.indexOf('Bearer ') !== 0) {
     return res.status(401).json({
@@ -186,16 +220,37 @@ function safeDrop(req, res) {
   var jwtToken = auth.split(' ')[1]
   try {
     var currentUser = jwt.verify(jwtToken, config.secret)
-    if(currentUser.role > 2) {
-      return res.status(401).json({
+    if(currentUser.role > 2) {    //Owner = 1, Manage = 2, if not, Permission denined
+      return res.status(403).json({
         success: false,
         message: 'Permission denied',
-        status: 401
+        status: 403
       })
     }
     var { dropCash } = require('../db/cash')
+    var payload = req.body
+    // fake payload
+    // payload = {
+    //   "dropAmount": 455.99,
+    //   "dropTime": "2018-05-21T19:06:18.537Z",
+    //   "dropBy": 23
+    // }
+    var dropTime = moment(payload.dropTime)
+    if(!dropTime.isValid()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid dropTime format',
+        status: 400
+      })
+    }
+    var drop = {
+      drop_amount: payload.dropAmount,
+      drop_time: dropTime.format('YYYY-MM-DD HH:mm:ss'),
+      drop_by: payload.dropBy,
+      account_id: currentUser.accountId
+    }
 
-    dropCash(payload.dropAmount, currentUser.accountId, currentUser.userId, (err, result)=> {
+    dropCash(drop, (err, result)=> {
       if(err) {
         return res.status(400).json({
           success: false,
@@ -229,7 +284,7 @@ function drops(account_id, callback) {
     }
     var drops = cash.drops
     var total = 0
-    drops = drops.map(drop, i => {
+    drops = drops.map((drop, i) => {
       total += drop.amount
       return {
         dropAmount: drop.amount,
@@ -240,11 +295,11 @@ function drops(account_id, callback) {
     var data = {
       cashDrop: {
         total: total,
-        lastUpdate: drops[0].dropTime,
+        lastUpdate: (drops.length && drops[0].dropTime) || new Date(),
         drops: drops
       }
     }
-    callback(null, {cash, data})
+    callback(null, { cash, drop: data })
   })
 }
 
@@ -260,11 +315,11 @@ function getCurrentCashDrops(req, res) {
   var jwtToken = auth.split(' ')[1]
   try {
     var currentUser = jwt.verify(jwtToken, config.secret)
-    if(currentUser.role > 2) {
-      return res.status(401).json({
+    if(currentUser.role > 2) {    //Owner = 1, Manage = 2, if not, Permission denined
+      return res.status(403).json({
         success: false,
         message: 'Permission denied',
-        status: 401
+        status: 403
       })
     }
     drops(currentUser.accountId, (err, data)=>{
@@ -276,7 +331,7 @@ function getCurrentCashDrops(req, res) {
       return res.status(200).json({
         success: true,
         message: 'Current cash drops',
-        data: data.data,
+        data: data.drop,
         status: 200
       })
     })
@@ -291,6 +346,36 @@ function getCurrentCashDrops(req, res) {
 
 }
 
+function calculateClosing(account_id, callback) {
+  var { getCurrentTotalSaleAmount } = require('../db/payment')
+  getCurrentTotalSaleAmount(account_id, (err, result) => {
+    if(err) return callback(err, result)
+
+    drops(account_id, (err, data) => {
+      if(err) return callback(err, result)
+
+      var totalSalesAmount = 0
+      if(result && result.length) totalSalesAmount = result[0].total_sales_amount
+
+      var totalDropsAmount = data.drop.cashDrop.total
+      var openingAmount = data.cash.opening_amount
+
+      var closing_amount = (openingAmount + totalSalesAmount) - totalDropsAmount
+      var last_update = new Date()
+      var closingAmount = {
+        "currentOpeningAmount": openingAmount,
+        "currentClosingAmount": closing_amount,
+        "totalDropsAmount": totalDropsAmount,
+        "totalSalesAmount": totalSalesAmount,
+        "lastUpdate": last_update,
+        "cashDrop": data.drop
+      }
+      callback(null, closingAmount)
+    })
+
+  })
+}
+
 function getClosing(req, res) {
   var auth = req.headers.authorization
   if(!auth || auth.indexOf('Bearer ') !== 0) {
@@ -303,36 +388,37 @@ function getClosing(req, res) {
   var jwtToken = auth.split(' ')[1]
   try {
     var currentUser = jwt.verify(jwtToken, config.secret)
-    if(currentUser.role > 2) {
-      return res.status(401).json({
+    if(currentUser.role > 2) {    //Owner = 1, Manage = 2, if not, Permission denined
+      return res.status(403).json({
         success: false,
         message: 'Permission denied',
-        status: 401
+        status: 403
       })
     }
-    var { getClosingAmounts } = require('../db/cash')
-
-    drops(currentUser.accountId, (err, data)=>{
+    calculateClosing(currentUser.accountId, (err, result) => {
       if(err) return res.status(400).json({
         success: false,
         message: err.message,
         status: 400
       })
-      var closing_amount = 2000 // fake closing
-      var last_update = new Date() // fake last update date
-      var closingAmount = {
-        "currentOpeningAmount": data.cash.opening_amount,
-        "currentClosingAmount": closing_amount,
-        "lastUpdate": last_update,
-        "cashDrop": data.data
+
+      var data = {
+        currentOpeningAmount: result.currentOpeningAmount,
+        currentClosingAmount: result.currentClosingAmount,
+        lastUpdate: result.lastUpdate,
+        cashDrop: result.cashDrop
       }
+
       return res.status(200).json({
         success: true,
         message: 'Current closing amount',
-        data: closingAmount,
+        data: data,
         status: 200
       })
+
     })
+
+
   } catch (err) {
     console.error(err)
     return res.status(400).json({

@@ -52,7 +52,7 @@ app.use(function(err, req, res, next) {
 
 // Get token from Auth0
 var { getAuth0Token } = require('./helper')
-// getAuth0Token();
+getAuth0Token();
 
 module.exports = app;
 // run on terminal using below command

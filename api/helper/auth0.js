@@ -6,7 +6,7 @@ var jwt = require('jsonwebtoken');
 function createAuth0User(user, callback) {
   var token = require('../helper').token;
 
-  if(!token) return callback(new Error('No token exists in server'), null)
+  if(!token) return callback(new Error('No auth0 token received yet in server, try again after a few seconds'), null)
 
   var args = {
     data: {
@@ -41,6 +41,52 @@ function createAuth0User(user, callback) {
       return callback(new Error(data.error_description || data.message), null)
     }
   });
+}
+
+
+function updateAuth0User(user, callback) {
+  var token = require('../helper').token;
+
+  if(!token) return callback(new Error('No auth0 token received yet in server, try again after a few seconds'), null)
+
+  var { getAuth0UserIdByUserId } = require('../db/user')
+  getAuth0UserIdByUserId(user.account_id, user.id, user.role_id, (err, result) => {
+    if(err) callback(err, result)
+    else {
+
+      if(!result || !result.length) callback(new Error('User not found'), null)
+
+      var args = {
+        data: {
+          'connection': config.auth0_connection,
+          // 'email': user.email,   // <----- auth0 return error: "Cannot update password and email simultaneously"
+          'password': user.password,
+          'user_metadata': {
+            'pin': user.pin,
+            'role_id': user.role_id,
+            'account_id': user.account_id
+          }
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token.access_token
+        }
+      }
+      var url = config.audience + 'users/' + result[0].auth0_user_id
+      client.patch(url, args, function (data, response) {
+        // parsed response body as js object
+        console.log('------------------------- auth0 update user response body -------------------')
+        console.log(data);
+        if(data && !data.error) {
+          callback(null, data)
+        } else {
+          return callback(new Error(data.error_description || data.message), null)
+        }
+      });
+
+    }
+  })
+
 }
 
 
@@ -116,5 +162,6 @@ function verifyAuth0Token(req, res, next) {
 
 module.exports = {
   createAuth0User,
+  updateAuth0User,
   verifyAuth0Token
 }
