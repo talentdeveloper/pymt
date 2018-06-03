@@ -38,6 +38,31 @@ function getAllModifier(account_id, modifier_id, callback) {
   });
 }
 
+function getModifiersForItem(account_id, item_id, callback) {
+  var sql = `select i.id item_id, m.id modifier_id, m.name modifier_name, a.name attribute, a.value
+from item_modifier_map p inner join modifier m on m.id = p.modifier_id inner join items i on i.id = p.item_id
+inner join modifier_attribute a on m.id = a.modifier_id where i.account_id = ${account_id} and i.id = ${item_id}`
+
+  connection.query(sql, function(err, result) {
+    if(err) callback(err, result)
+    if(!result || !result.length) return callback(err, result)
+    else {
+      var modifiers = [setItemValues(result[0])]
+      for(var i = 0; i < result.length; i++) {
+        var modifier = result[i+1]
+        if(!modifier) break;
+        var lastItem = modifiers[modifiers.length -1]
+        if(lastItem.modifierId === modifier.modifier_id) {
+          lastItem.modifiers[modifier.attribute] = modifier.value
+        } else {
+          modifiers.push(setItemValues(modifier))
+        }
+      }
+      callback(null, modifiers)
+    }
+  });
+}
+
 function createModifier(modifier, callback) {
   var sql = `insert into modifier (name, account_id) values ('${modifier.modifierName}', ${modifier.account_id})`
   connection.query(sql, function(err, result) {
@@ -113,5 +138,6 @@ module.exports = {
   getAllModifier,
   createModifier,
   updateModifier,
-  getAllModifierWithItemId
+  getAllModifierWithItemId,
+  getModifiersForItem
 }

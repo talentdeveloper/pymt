@@ -16,7 +16,7 @@ var login = require('../controller/login')
 
 // Login
 router.post('/api/accounts/user/post/pin', login.login)
-router.use(verifyAuth0Token)
+// router.use(verifyAuth0Token)
 router.post('/api/accounts/user/post/pin/verified', login.login)
 
 // Account
@@ -37,6 +37,7 @@ router.get('/api/items/get/items', item.index)
 router.get('/api/items/get/item/:id', item.edit)
 router.post('/api/items/post/create', item.create)
 router.post('/api/items/post/edit/:id', item.update)
+router.get('/api/items/get/modifiers/:id', item.modifiers)
 
 // Modifier
 router.get('/api/item/get/modifiers', modifier.index)
@@ -57,7 +58,7 @@ router.get('/api/history/get/order/:id', order.edit)
 
 // Payment
 router.post('/api/payment/post', payment.create)
-router.post('/api/receipt/:contact', payment.send)
+router.post('/api/receipt/post/:contact', payment.send)
 
 // Cash
 router.post('/api/manager/post/openingAmount', cash.openDay)

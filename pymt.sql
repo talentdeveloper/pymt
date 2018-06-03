@@ -96,6 +96,9 @@ CREATE TABLE `cash` (
   `closing_user_id` int(11) DEFAULT NULL,
   `eod_till_user_id` int(11) DEFAULT NULL,
   `eod_till_entry_date` datetime DEFAULT NULL,
+  `card_amount` decimal(10,4) DEFAULT NULL,
+  `card_batch_number` varchar(45) DEFAULT NULL,
+  `card_transaction_count` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `cash_account_id_account_idx` (`account_id`),
   KEY `cash_opening_user_id_user_idx` (`opening_user_id`),
@@ -105,7 +108,7 @@ CREATE TABLE `cash` (
   CONSTRAINT `cash_closing_user_id_user` FOREIGN KEY (`closing_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `cash_eod_till_user_id_user` FOREIGN KEY (`eod_till_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `cash_opening_user_id_user` FOREIGN KEY (`opening_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -126,7 +129,7 @@ CREATE TABLE `cash_drop` (
   KEY `cash_drop_by_user_idx` (`drop_by`),
   CONSTRAINT `cash_drop_by_user` FOREIGN KEY (`drop_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `cash_drop_cash_id_cash` FOREIGN KEY (`cash_id`) REFERENCES `cash` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -359,6 +362,7 @@ CREATE TABLE `payment` (
   `signature` blob,
   `amount_tendered` decimal(10,2) DEFAULT NULL,
   `change_given` decimal(10,2) DEFAULT NULL,
+  `amount_paid` decimal(10,2) GENERATED ALWAYS AS ((`amount_tendered` - `change_given`)) STORED,
   `xmp` longtext,
   `account_id` int(11) DEFAULT NULL,
   `cash_id` int(11) DEFAULT NULL,
@@ -459,4 +463,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-06-03  0:43:15
+-- Dump completed on 2018-06-03 23:59:56

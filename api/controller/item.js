@@ -268,10 +268,51 @@ function update(req, res) {
   }
 }
 
+function modifiers(req, res) {
+  var auth = req.headers.authorization
+  if(!auth || auth.indexOf('Bearer ') !== 0) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized request',
+      status: 401
+    })
+  }
+  var jwtToken = auth.split(' ')[1]
+  try {
+    var currentUser = jwt.verify(jwtToken, config.secret)
+    var { getModifiersForItem } = require('../db/modifier')
+    var item_id = req.params.id
+
+    getModifiersForItem(currentUser.accountId, item_id, (err, result)=> {
+      if(err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+          status: 400
+        })
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Item\'s modifiers list',
+        data: result,
+        status: 200
+      })
+    })
+  } catch (err) {
+    console.error(err)
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+      status: 400
+    })
+  }
+}
+
 
 module.exports = {
   index,
   edit,
   create,
-  update
+  update,
+  modifiers
 }

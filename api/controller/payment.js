@@ -2,6 +2,9 @@ var config = require('../config/config.js');
 var connection = require('../config/connection.js');
 var jwt = require('jsonwebtoken');
 var moment = require('moment');
+var validate = require("validate.js");
+var path = require('path');
+var fs = require('fs');
 
 function create(req, res) {
   var auth = req.headers.authorization
@@ -123,22 +126,33 @@ function create(req, res) {
 
 
 function send(req, res) {
-  var contact = req.params.contact  //"email@email.com" or "999-999-9999"
-  var order = req.body
-  // fake order
-  order = {
-    orderObj: {
-      "cartTotal": 0,
+  var auth = req.headers.authorization
+  if(!auth || auth.indexOf('Bearer ') !== 0) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized request',
+      status: 401
+    })
+  }
+  var jwtToken = auth.split(' ')[1]
+  try {
+    var currentUser = jwt.verify(jwtToken, config.secret)
+    var { sendMail } = require('../helper')
+    var contact = req.params.contact  //"email@email.com" or "999-999-9999"
+    var order = req.body
+    // fake order
+    order = {
+      "cartTotal": 23.50,
       "itemQuantity": 5,
       "items": [
         {
-          "itemId": "",
-          "itemName": "",
+          "itemId": "123",
+          "itemName": "Waffa",
           "quantity": 3,
-          "price": 0,
+          "price": 3.30,
           "itemWeight": .5,
-          "trackInventory": "",
-          "quantityRemaining": 0,
+          "trackInventory": "false",
+          "quantityRemaining": 2,
           "isTaxable": "true",
           "isEBT": "false",
           "isFSA": "false",
@@ -162,12 +176,12 @@ function send(req, res) {
           }
         },
         {
-          "itemId": "",
-          "itemName": "",
+          "itemId": "332",
+          "itemName": "Burger",
           "quantity": 2,
-          "price": 0,
-          "trackInventory": "",
-          "quantityRemaining": 0,
+          "price": 5.40,
+          "trackInventory": "false",
+          "quantityRemaining": 20,
           "isTaxable": "true",
         }
       ],
@@ -178,15 +192,97 @@ function send(req, res) {
         "xmp": "null"
       }
     }
+
+    var constraints = {
+      contact: {
+        email: {
+          message: "^It doesn't look like a valid email"
+        }
+      }
+    }
+    if(!validate({contact: contact}, constraints)) {
+      // contact is a valid email
+      var html = `
+      <h3>Receipt</h3>
+      <p>
+        <ul>
+          <li>Total Amount: ${order.cartTotal}</li>
+          <li>Total Items: ${order.itemQuantity}</li>
+          <li>Payment Type: ${order.payment.paymentType}</li>
+        </ul>
+      </p>`
+
+      const Json2csvParser = require('json2csv').Parser;
+      const fields = ['Name', 'Quantity', 'Price', 'Amount'];
+      const items = order.items.map(it => ({
+        'Name': it.itemName,
+        'Quantity': it.quantity,
+        'Price': '$'+it.price,
+        'Amount': '$'+(parseFloat(it.price) * parseFloat(it.quantity))
+      }))
+
+      const json2csvParser = new Json2csvParser({ fields });
+      const csv = json2csvParser.parse(items);
+
+      var  attachment = ''
+      var filename = 'Receipt.csv';
+      // var filepath = path.join(__dirname, '../upload/' + 'pymt.png');
+      // var file = fs.readFileSync(filepath);
+      attachment = { file: new Buffer(csv), filename }
+
+      sendMail(contact, 'Payment Receipt', 'This won\'t appear in mail body if html exist', html, attachment, (err, result) => {
+        if(err) {
+          return res.status(400).json({
+            success: false,
+            message: err.message,
+            status: 400
+          })
+        }
+        return res.status(200).json({
+          success: true,
+          message: 'Receipt sent successfully',
+          status: 200
+        })
+      })
+    }
+    else {
+      constraints = {
+        contact: {
+          format: {
+            pattern: "^[+]?[0-9]+(\-?[0-9]+)+$",
+            flags: "i",
+            message: "can only contain +/- and 0-9"
+          }
+        }
+      }
+
+      if(!validate({contact: contact}, constraints)) {
+        // contact is a valid phone number
+
+        // send receipt sms via twillo
+
+        return res.status(200).json({
+          success: true,
+          message: 'Receipt sent successfully',
+          status: 200
+        })
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid contact info',
+          status: 400
+        })
+      }
+    }
+
+  } catch (err) {
+    console.error(err)
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+      status: 400
+    })
   }
-
-  // send receipt to email ro sms
-
-  return res.status(200).json({
-    success: true,
-    message: 'Receipt sent successfully',
-    status: 200
-  })
 }
 
 

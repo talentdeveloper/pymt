@@ -2,7 +2,7 @@ var Client = require('node-rest-client').Client;
 var client = new Client();
 var config = require('../config/config')
 
-var getAuth0Token = function() {
+module.exports.getAuth0Token = function() {
   var args = {
     data: {
       "client_id": config.client_id,
@@ -22,4 +22,26 @@ var getAuth0Token = function() {
 }
 
 
-module.exports.getAuth0Token = getAuth0Token;
+
+module.exports.sendMail = function(to, subject, text, html, attachment, callback) {
+  var mailgun = require("mailgun-js");
+  var api_key = config.mailgun_apikey;
+  var DOMAIN = config.mailgun_domain;
+  var mailgun = require('mailgun-js')({apiKey: api_key, domain: DOMAIN});
+
+  var attch = ''
+  if(attachment) attch = new mailgun.Attachment({data: attachment.file, filename: attachment.filename});
+
+  var data = {
+    from: config.mailgun_sender,
+    to: to,
+    subject: subject,
+    text: text,
+    html: html,
+    attachment: attch
+  };
+
+  mailgun.messages().send(data, function (error, body) {
+    if(callback) callback(error, body)
+  });
+}
