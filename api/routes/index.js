@@ -16,7 +16,7 @@ var login = require('../controller/login')
 
 // Login
 router.post('/api/accounts/user/post/pin', login.login)
-// router.use(verifyAuth0Token)
+router.use(verifyAuth0Token)
 router.post('/api/accounts/user/post/pin/verified', login.login)
 
 // Account
