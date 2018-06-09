@@ -3,11 +3,11 @@ var app = express();
 var router = express.Router();
 var multer = require('multer');
 var path = require('path');
-var config = require('../config/config.js');
-var connection = require('../config/connection.js');
 var jwt = require('jsonwebtoken');
 var Client = require('node-rest-client').Client;
 var client = new Client();
+var config = require('../config/config.js');
+var connection = require('../config/connection.js');
 
 /***********************************************************************************************************************/
 var storage = multer.diskStorage({
@@ -31,7 +31,7 @@ router.get('/', function(req, res){
 router.get('/logout',function(req, res){
   var callbackUrl = 'http://localhost:3000'
   var parameters = 'client_id='+config.client_id+'&returnTo='+callbackUrl
-  return res.redirect(config.auth0_url + 'v2/logout?' + parameters)
+  return res.redirect(config.auth0_url + '/v2/logout?' + parameters)
 });
 
 /***********************************************************************************************************************/
@@ -45,12 +45,14 @@ router.get('/category', function (req, res) {
   if(!jwtToken) return res.render('pages/error', { layout: false, error: 'Unauthorized user' })
   var currentUser = jwt.verify(jwtToken, config.secret)
 
+  console.log(currentUser);
   var { getAllCategory } = require('../db/category')
   getAllCategory(currentUser.account_id, (err, result) => {
-    if(err) return res.render('pages/error', { error: data.message });
+    if(err) return res.render('pages/error', { error: 'Not Found' });
     return res.render('pages/category', { data: result });
   })
 });
+
 /***********************************************************************************************************************/
 router.get('/getCategory/:id', function (req, res) {
     var id = req.params.id;
@@ -116,7 +118,7 @@ router.get('/users', function (req, res) {
       "Authorization": "Bearer " + token.access_token
     }
   }
-  var url = config.audience + 'users'
+  var url = config.audience + '/users'
   client.get(url, args, function (data, response) {
     // parsed response body as js object
     console.log('------------------------- user list response body -------------------')
@@ -188,7 +190,7 @@ router.get('/userDelete/:id', function (req, res) {
         "Authorization": "Bearer " + token.access_token
       }
     }
-    var url = config.audience + 'users/' + id
+    var url = config.audience + '/users/' + id
     client.delete(url, args, function (data, response) {
       if(data && !data.error) return res.render('pages/error', { error: data.error_description || data.message })
       else {
@@ -274,10 +276,11 @@ router.post('/AddCategory',  function(req,res) {
 });
 
 /***********************************************************************************************************************/
-router.post('/login',function(req,res){
-    var email = req.body.email;
-    var password = req.body.password;
+router.post('/login',(req,res) => {
+  var email = req.body.email;
+  var password = req.body.password;
 
+  if (email && password) {
     var args = {
       data: {
         "grant_type": "password",
@@ -292,30 +295,31 @@ router.post('/login',function(req,res){
         "Content-Type": "application/json"
       }
     }
-    client.post(config.auth0_url + "oauth/token", args, function (data, response) {
+    client.post(config.auth0_url + "/oauth/token", args, (data, response) => {
       // parsed response body as js object
-      console.log('------------------------- login response body -------------------')
-      console.log(data)
-
       if(data && data.access_token) {
         args = {
+          data: {
+            "audience": config.audience,
+            "scope": "openid profile email",
+            "client_id": config.client_id,
+            "client_secret": config.client_secret
+          },
           headers: {
             "Content-Type": "application/json",
-            "Authorization": 'Bearer '+ data.access_token
+            "Authorization": "Bearer "+ data.access_token
           }
         }
-        client.post(config.auth0_url + "userinfo", args, function (profile, response) {
+        client.post(config.auth0_url + "/userinfo", args, (profile, response) => {
           // parsed response body as js object
-          console.log('------------------------- profile response body -------------------')
-          console.log(profile);
-          if(profile && !profile.error) {
+          if(profile && profile.sub) {
             profile.access_token = data.access_token
             profile.id_token = data.id_token
-
+  
             var { getAccountIdByUserId } = require('../db/user')
             getAccountIdByUserId(profile.sub, (err, result) => {
               if(err) return res.render('pages/error', { error: err.message });
-
+  
               profile.account_id = result[0].account_id
               var token = jwt.sign(profile, config.secret, {
                   expiresIn: 5000
@@ -324,14 +328,14 @@ router.post('/login',function(req,res){
               res.redirect('dashboard');
             })
           } else {
-            res.render('pages/error', { error: profile.error });
+            res.render('page/error', {error: profile.error});
           }
         });
-
-      } else {
-        res.render('pages/error', { error: data.error_description || data.message });
       }
     });
+  } else {
+    res.render('page/error', {error: data.error_description || data.message});
+  }
 });
 /***********************************************************************************************************************/
 router.post('/forgotPassword',function(req,res) {
@@ -404,7 +408,7 @@ router.post('/UserDataInserted', function(req,res){
       "Authorization": "Bearer " + token.access_token
     }
   }
-  var url = config.audience + 'users'
+  var url = config.audience + '/users'
   client.post(url, args, function (data, response) {
     // parsed response body as js object
     console.log('------------------------- response body -------------------')
@@ -468,8 +472,10 @@ router.post('/upload',upload, function(req,res){
 });
 
 /***********************************************************************************************************************/
-router.post('/account',function(req,res){
+router.post('/account',(req,res) => {
+    console.log(req.body);
     var email = req.body.email;
+    var password = req.body.password || 'test';
     var company_name = req.body.company_name;
     var first_name = req.body.first_name;
     var last_name = req.body.last_name;
@@ -479,51 +485,79 @@ router.post('/account',function(req,res){
     var company_address2 = req.body.company_address2;
     var state = req.body.state;
     var companyzip = req.body.companyzip;
-    var image = req.filename;
 
-    var sql = `
-    insert into account (
-      company_name,
-      phone_no,
-      tax_rate,
-      address_id,
-      merchant_id,
-      device_settings,
-      tip_enabled,
-      bar_tab,
-      signature_amount,
-      cash_enabled,
-      discount_enabled,
-      fsa_enabled,
-      ebt_enabled,
-      table_tab,
-      table_num,
-      gift_cards,
-      cash_discount
-    ) values (
-      '${company_name}',
-      ${phone_no},
-      ${tax_rate},
-      NULL,
-      ${Date.now()},
-      'UUID',
-      true,
-      true,
-      10000,
-      true,
-      true,
-      true,
-      true,
-      true,
-      true,
-      true,
-      true
-    )
-    `
-    connection.query(sql, function(err,result) {
-      if(err) return res.render('pages/error', { error: err.message })
-      if(result) return res.redirect('dashboard');
-    });
+    var helper = require('../helper');
+    var args = {
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: 'Bearer ' + helper.token.access_token
+      },
+      data: {
+        "connection": config.auth0_connection,
+        "email": email,
+        "password": password,
+        "user_metadata": {
+          first_name,
+          last_name,
+          phone_no,
+          company_name,
+          company_address,
+          company_address2,
+          tax_rate,
+          state,
+          companyzip
+        },
+        "email_verified": false,
+        "verify_email": false,
+        "app_metadata": {}
+      }
+    }
+    
+    client.post(config.auth0_url + "/api/v2/users", args, (data, response) => {
+      // var sql = `
+      //   insert into account (
+      //     company_name,
+      //     phone_no,
+      //     tax_rate,
+      //     address_id,
+      //     merchant_id,
+      //     device_settings,
+      //     tip_enabled,
+      //     bar_tab,
+      //     signature_amount,
+      //     cash_enabled,
+      //     discount_enabled,
+      //     fsa_enabled,
+      //     ebt_enabled,
+      //     table_tab,
+      //     table_num,
+      //     gift_cards,
+      //     cash_discount
+      //   ) values (
+      //     ${company_name},
+      //     ${phone_no},
+      //     ${tax_rate},
+      //     NULL,
+      //     ${Date.now()},
+      //     'UUID',
+      //     true,
+      //     true,
+      //     10000,
+      //     true,
+      //     true,
+      //     true,
+      //     true,
+      //     true,
+      //     true,
+      //     true,
+      //     true
+      //   )`
+      return res.redirect('dashboard');
+      // connection.query(sql, function(err,result) {
+      //   if(err) return res.render('pages/error', { error: err.message })
+      //   if(result) return res.redirect('dashboard');
+      // });
+    })
 });
 /***********************************************************************************************************************/
 module.exports = router;
