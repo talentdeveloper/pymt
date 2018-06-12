@@ -319,8 +319,10 @@ router.post('/login',(req,res) => {
             var { getAccountIdByUserId } = require('../db/user')
             getAccountIdByUserId(profile.sub, (err, result) => {
               if(err) return res.render('pages/error', { error: err.message });
-  
-              profile.account_id = result[0].account_id
+              
+              if (result.length > 0) {
+                profile.account_id = result[0].account_id
+              }
               var token = jwt.sign(profile, config.secret, {
                   expiresIn: 5000
               });
