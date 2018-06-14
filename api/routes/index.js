@@ -13,6 +13,9 @@ var order = require('../controller/order')
 var payment = require('../controller/payment')
 var cash = require('../controller/cash')
 var login = require('../controller/login')
+var giftcard = require('../controller/giftcard')
+var tab = require('../controller/tab')
+var table = require('../controller/table')
 
 // Login
 router.post('/api/accounts/user/post/pin', login.login)
@@ -67,6 +70,20 @@ router.post('/api/manager/post/closingAmount', cash.closeDay)
 router.post('/api/manager/post/dropAmount', cash.safeDrop)
 router.get('/api/manager/get/cashDrop', cash.getCurrentCashDrops)
 router.get('/api/manager/get/closingAmount', cash.getClosing)
+
+// Tab
+router.get('/api/tabs/get/allTabs', tab.allTabs)
+router.post('/api/tabs/post/createTab', tab.create);
+
+// Table
+router.get('/api/table/get/allTables', table.allTables)
+router.post('/api/tabs/post/createTable', table.create);
+router.post('/api/tabs/post/updateTable', table.update);
+
+//GiftCard
+router.get('/api/giftcard/balance', giftcard.balance)
+router.get('/api/giftcard/load', giftcard.load)
+router.get('/api/giftcard/redeem', giftcard.redeem)
 
 /***********************************************************************************************************************/
 // var storage = multer.diskStorage({

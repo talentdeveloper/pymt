@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "nodemon ./bin/www"
   },
   "dependencies": {
     "body-parser": "^1.18.2",
@@ -25,6 +25,10 @@
     "mysql": "^2.15.0",
     "node-rest-client": "^3.1.0",
     "path": "^0.12.7",
-    "validate.js": "^0.12.0"
+    "request": "^2.87.0",
+    "twilio": "^3.17.2",
+    "validate.js": "^0.12.0",
+    "xml2json": "^0.11.2",
+    "xmlbuilder": "^10.0.0"
   }
 }

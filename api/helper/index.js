@@ -7,7 +7,7 @@ module.exports.getAuth0Token = function() {
     data: {
       "client_id": config.client_id,
       "client_secret": config.client_secret,
-    	"audience": config.audience,
+      "audience": config.audience,
     	"grant_type": "client_credentials"
     },
     headers: {
@@ -20,7 +20,6 @@ module.exports.getAuth0Token = function() {
     module.exports.token = data
   });
 }
-
 
 
 module.exports.sendMail = function(to, subject, text, html, attachment, callback) {
@@ -43,5 +42,20 @@ module.exports.sendMail = function(to, subject, text, html, attachment, callback
 
   mailgun.messages().send(data, function (error, body) {
     if(callback) callback(error, body)
+  });
+}
+
+module.exports.sendSMS = (to, content, callback) => {
+  var client = require('twilio')(
+    config.twilio_sid,
+    config.twilio_auth_token
+  );
+
+  client.messages.create({
+    from: config.twilio_sender,
+    to: to,
+    body: content
+  }, (error, body) => {
+    if(callback) callback(error, body);
   });
 }

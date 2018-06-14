@@ -136,7 +136,7 @@ function send(req, res) {
   }
   var jwtToken = auth.split(' ')[1]
   try {
-    var currentUser = jwt.verify(jwtToken, config.secret)
+
     var { sendMail } = require('../helper')
     var contact = req.params.contact  //"email@email.com" or "999-999-9999"
     var order = req.body
@@ -260,12 +260,29 @@ function send(req, res) {
         // contact is a valid phone number
 
         // send receipt sms via twillo
+        var { sendSMS } = require('../helper');
+        var smsContent = `
+          Receipt\n
+          \tTotal Amount: ${order.cartTotal},\n
+          \tTotal Items: ${order.itemQuantity},\n
+          \tPayment Type: ${order.payment.paymentType},\n
+          Please check for your email for details.
+          `;
 
-        return res.status(200).json({
-          success: true,
-          message: 'Receipt sent successfully',
-          status: 200
-        })
+        sendSMS(contact, smsContent, (err, result) => {
+          if(err) {
+            return res.status(400).json({
+              success: false,
+              message: err.message,
+              status: 400
+            })
+          }
+          return res.status(200).json({
+            success: true,
+            message: 'Receipt sent successfully',
+            status: 200
+          })
+        });
       } else {
         return res.status(400).json({
           success: false,
