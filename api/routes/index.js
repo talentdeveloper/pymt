@@ -73,12 +73,13 @@ router.get('/api/manager/get/closingAmount', cash.getClosing)
 
 // Tab
 router.get('/api/tabs/get/allTabs', tab.allTabs)
-router.post('/api/tabs/post/createTab', tab.create);
+router.post('/api/tabs/post/createTab', tab.create)
+router.post('/api/tabs/post/updateTab', tab.update)
 
 // Table
 router.get('/api/table/get/allTables', table.allTables)
-router.post('/api/tabs/post/createTable', table.create);
-router.post('/api/tabs/post/updateTable', table.update);
+router.post('/api/tabs/post/createTable', table.create)
+router.post('/api/tabs/post/updateTable', table.update)
 
 //GiftCard
 router.get('/api/giftcard/balance', giftcard.balance)

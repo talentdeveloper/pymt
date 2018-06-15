@@ -27,6 +27,31 @@ function createPayment(payment, callback) {
 
 }
 
+function updatePayment(payment, callback) {
+  var { getOrderInfoByTransactionId } = require('./order')
+  var transId = (payment.orderObj && payment.orderObj.transactionId) || ''
+  getOrderInfoByTransactionId(payment.account_id, transId, (err, result) => {
+    if(err) return callback(err, null)
+    var order = result[0]
+    if(!order) return callback(new Error(`Order not found for Transaction ID: '${transId}'`), null)
+
+    var paymentObj = payment.orderObj.payment
+    var set = {
+      cashId: order.cash_id,
+      paymentType: paymentObj.paymentType,
+      signature: paymentObj.signature,
+      amountTendered: paymentObj.amountTendered,
+      changeGiven: paymentObj.changeGiven,
+      xmp: paymentObj.xmp,
+    }
+    var sql = `UPDATE \'payment'\ SET ? WHERE id=${tableId} AND account_id=${accountId}`
+
+    connection.query(sql, set, (err, result) => {
+      callback(err, null);
+    })
+  })
+}
+
 function getCurrentTotalSaleAmount(account_id, callback) {
   var { checkDayOpened } = require('./cash')
   checkDayOpened(account_id, (err, result) => {
@@ -46,5 +71,6 @@ function getCurrentTotalSaleAmount(account_id, callback) {
 module.exports = {
   getAllPayments,
   createPayment,
+  updatePayment,
   getCurrentTotalSaleAmount
 }

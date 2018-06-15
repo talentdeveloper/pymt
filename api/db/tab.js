@@ -1,5 +1,5 @@
 const connection = require('../config/connection.js');
-const { createPayment } = require('./payment');
+const { createPayment, updatePayment } = require('./payment');
 const { createOrder, updateOrder } = require('./order');
 
 const getAllTabs = (accountId, callback) => {
@@ -68,7 +68,24 @@ const createTab = (accountId, param, callback) => {
     }
 }
 
+const updateTab = (accountId, param, callback) => {
+    let orderObj = param.orderObj;
+    let paymentObj = param.paymentObj;
+
+    if (!firstName || !lastName || !orderObj || !paymentObj) {
+        callback(new Error('Validation Error'), null);
+    } else {
+        updateOrder(orderObj, accountId, (err, result) => {
+            if (err) callback(err, null);
+            else {
+                updatePayment(paymentObj, callback);
+            }
+        })
+    }
+}
+
 module.exports = {
     getAllTabs,
-    createTab
+    createTab,
+    updateTab
 }

@@ -79,7 +79,46 @@ const create = (req, res) => {
     }
 }
 
+const update = (req, res) => {
+    let auth = req.headers.authorization
+    if(!auth || auth.indexOf('Bearer ') !== 0) {
+        return res.status(401).json({
+        success: false,
+        message: 'Unauthorized request',
+        status: 401
+        })
+    }
+    let jwtToken = auth.split(' ')[1]
+
+    try {
+        let currentUser = jwt.verify(jwtToken, config.secret)
+        let { updateTab } = require('../db/tab')
+
+        updateTab(currentUser.accountId, req.body, (err, tab)=> {
+            if(err) {
+              return res.status(400).json({
+                success: false,
+                message: err.message,
+                status: 400
+              })
+            }
+            return res.status(200).json({
+              success: true,
+              message: 'Successfully Created',
+              status: 200
+            })
+        })
+    } catch (err) {
+        return res.status(400).json({
+            success: false,
+            message: err.message,
+            status: 400
+        })
+    }
+}
+
 module.exports = {
     allTabs,
-    create
+    create,
+    update
 }
