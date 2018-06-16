@@ -42,7 +42,6 @@ function index(req, res) {
 
 }
 
-
 function edit(req, res) {
   var auth = req.headers.authorization
   if(!auth || auth.indexOf('Bearer ') !== 0) {

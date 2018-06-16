@@ -330,13 +330,13 @@ router.post('/login',(req,res) => {
               res.redirect('dashboard');
             })
           } else {
-            res.render('page/error', {error: profile.error});
+            res.render('pages/error', {error: profile.error});
           }
         });
       }
     });
   } else {
-    res.render('page/error', {error: data.error_description || data.message});
+    res.render('pages/error', {error: data.error_description || data.message});
   }
 });
 /***********************************************************************************************************************/
@@ -475,16 +475,15 @@ router.post('/upload',upload, function(req,res){
 
 /***********************************************************************************************************************/
 router.post('/account',(req,res) => {
-    console.log(req.body);
     var email = req.body.email;
+    var pin = req.body.pin || 1234;
     var password = req.body.password || 'test';
     var company_name = req.body.company_name;
     var first_name = req.body.first_name;
     var last_name = req.body.last_name;
     var phone_no = req.body.phone_no;
     var tax_rate =  req.body.tax_rate;
-    var company_address = req.body.company_address;
-    var company_address2 = req.body.company_address2;
+    var company_address = req.body.company_address || req.body.company_address2;
     var state = req.body.state;
     var companyzip = req.body.companyzip;
 
@@ -504,7 +503,6 @@ router.post('/account',(req,res) => {
           phone_no,
           company_name,
           company_address,
-          company_address2,
           tax_rate,
           state,
           companyzip
@@ -516,51 +514,82 @@ router.post('/account',(req,res) => {
     }
     
     client.post(config.auth0_url + "/api/v2/users", args, (data, response) => {
-      // var sql = `
-      //   insert into account (
-      //     company_name,
-      //     phone_no,
-      //     tax_rate,
-      //     address_id,
-      //     merchant_id,
-      //     device_settings,
-      //     tip_enabled,
-      //     bar_tab,
-      //     signature_amount,
-      //     cash_enabled,
-      //     discount_enabled,
-      //     fsa_enabled,
-      //     ebt_enabled,
-      //     table_tab,
-      //     table_num,
-      //     gift_cards,
-      //     cash_discount
-      //   ) values (
-      //     ${company_name},
-      //     ${phone_no},
-      //     ${tax_rate},
-      //     NULL,
-      //     ${Date.now()},
-      //     'UUID',
-      //     true,
-      //     true,
-      //     10000,
-      //     true,
-      //     true,
-      //     true,
-      //     true,
-      //     true,
-      //     true,
-      //     true,
-      //     true
-      //   )`
-      return res.redirect('dashboard');
-      // connection.query(sql, function(err,result) {
-      //   if(err) return res.render('pages/error', { error: err.message })
-      //   if(result) return res.redirect('dashboard');
-      // });
+      if (!data || !data.user_id)
+        return res.render('pages/error', {error: data.error_description || data.message});
+      var accountNo = data.user_id;
+      var merchantId = guid();
+
+      var sql = `
+        insert into account (
+          account_no,
+          company_name,
+          phone_no,
+          tax_rate,
+          address,
+          zip,
+          merchant_id,
+          tip_enabled,
+          bar_tab,
+          signature_amount,
+          cash_enabled,
+          discount_enabled,
+          fsa_enabled,
+          ebt_enabled,
+          table_tab,
+          table_num,
+          gift_cards,
+          cash_discount
+        ) values (
+          '${accountNo}',
+          '${company_name}',
+          '${phone_no}',
+          ${tax_rate},
+          '${company_address}',
+          '${companyzip}',
+          '${merchantId}',
+          1,
+          1,
+          10000,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        )`;
+
+      connection.query(sql, function(err,result) {
+        if(err) return res.render('pages/error', { error: err.message })
+        if(result) {
+          var sqlQuery = `INSERT INTO users SET ?`
+          var set = {
+            first_name,
+            last_name,
+            email,
+            pin,
+            role_id: 1,
+            auth0_user_id: accountNo,
+            account_id: result.insertId
+          }
+          connection.query(sqlQuery, set, (err, result) => {
+            if(err) return res.render('pages/error', { error: err.message })
+            return res.redirect('dashboard');
+          })
+        }
+      });
     })
 });
+
+const guid = () => {
+  const s4 = () => {
+    return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
+  }
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+}
 /***********************************************************************************************************************/
 module.exports = router;
 
