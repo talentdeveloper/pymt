@@ -40,7 +40,7 @@ function deleteUser(auth0_user_id, callback) {
 }
 
 function getAccountIdByUserId(auth0_user_id, callback) {
-  var sql = `select account_id from users where auth0_user_id = '${auth0_user_id}'`
+  var sql = `select account_id, role_id from users where auth0_user_id = '${auth0_user_id}'`
   connection.query(sql, function(err, result) {
     callback(err, result)
   });

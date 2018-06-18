@@ -600,4 +600,10 @@ header .form-inline {
 .language-show + .dropdown-menu {
   display: block; }
 
+
+div.message {
+  color: red;
+  text-align: center;
+  margin-bottom: 20px;
+}
 /*# sourceMappingURL=style.css.map */

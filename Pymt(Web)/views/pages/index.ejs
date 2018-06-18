@@ -32,7 +32,6 @@
 </head>
 
 
-
     <div class="limiter">
         <div class="container-login100">
             <div class="wrap-login100">
@@ -43,6 +42,10 @@
                     <span class="login100-form-title p-b-48">
                         <i class="zmdi zmdi-font"></i>
                     </span>
+                    
+                    <% if (message) { %>
+                        <div class="alert alert-info message"><%= message %></div>
+                    <% } %>
 
                     <div class="wrap-input100 validate-input" data-validate="Valid email is: a@b.c">
                         <input class="input100" type="text" name="email">
@@ -57,6 +60,10 @@
                         <span class="focus-input100" data-placeholder="Password"></span>
                     </div>
                     <input type="hidden" value="amdin" name="admin">
+
+                    <% if (error) { %>
+                        <div class="alert alert-danger" role="alert"><%= error %></div>
+                    <% } %>
                     <div class="container-login100-form-btn">
                         <div class="wrap-login100-form-btn">
                             <div class="login100-form-bgbtn"></div>
@@ -82,9 +89,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="staticModalLabel">Confirm email</h5>
-
             </div>
-
             <form name="myform" method="post" action="/forgotPassword">
                 <div class="modal-body">
                     <div class="form-group">
@@ -97,8 +102,6 @@
                   <button type="submit" id="next"  class="btn btn-primary">NEXT</button>
                 </div>
             </form>
-
-
         </div>
     </div>
 </div>
@@ -148,15 +151,15 @@
 <script src="assets/js/main.js"></script>
 
 
-<script src="assets/js/lib/chart-js/Chart.bundle.js"></script>
-<script src="assets/js/dashboard.js"></script>
-<script src="assets/js/widgets.js"></script>
+<!-- <script src="assets/js/lib/chart-js/Chart.bundle.js"></script> -->
+<!-- <script src="assets/js/dashboard.js"></script> -->
+<!-- <script src="assets/js/widgets.js"></script> -->
 <script src="assets/js/lib/vector-map/jquery.vmap.js"></script>
 <script src="assets/js/lib/vector-map/jquery.vmap.min.js"></script>
 <script src="assets/js/lib/vector-map/jquery.vmap.sampledata.js"></script>
 <script src="assets/js/lib/vector-map/country/jquery.vmap.world.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script type="text/javascript">
+<!-- <script type="text/javascript">
         $(document).ready(function () {
             $("#next").click(function () {
                 // var emailid = document.getElementById("useremail");
@@ -182,4 +185,4 @@
         });
     })(jQuery);
 
-</script>
+</script> -->

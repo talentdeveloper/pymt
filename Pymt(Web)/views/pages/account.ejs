@@ -1,5 +1,4 @@
-﻿
-    <!-- Right Panel -->
+﻿    <!-- Right Panel -->
 
     <div id="right-panel" class="right-panel">
 
@@ -35,12 +34,12 @@
                                         <form method="post"   action="/account">
                                             <div class="form-group">
                                                 <label for="formGroupExampleInput">Email</label>
-                                                <input type="text" class="form-control" id="email" name="email" placeholder="Example input">
+                                                <input type="text" class="form-control" id="email" name="email" placeholder="Example input" required>
                                                 <a href="javascript:void()" id="updatePassword" data-toggle="modal" data-target="#staticModal" style="float: right; color:blue" >Forgot password</a>
                                             </div>
                                             <div class="form-group">
                                                 <label for="formGroupExampleInput2">Company Name</label>
-                                                <input type="text" class="form-control" id="company_name" name="company_name" placeholder="Example input">
+                                                <input type="text" class="form-control" id="company_name" name="company_name" placeholder="Example input" required>
                                             </div>
                                             <div class="form-group">
                                                 <div style="height:100px;width:100px; border-radius:100%;border:1px solid #434343;background-color:#939393;margin-left:100px"></div>
@@ -48,19 +47,23 @@
                                             </div>
                                             <div class="form-group">
                                                 <label for="formGroupExampleInput">First Name</label>
-                                                <input type="text" class="form-control" id="first_name" name="first_name" placeholder="Example input">
+                                                <input type="text" class="form-control" id="first_name" name="first_name" placeholder="Example input" required>
                                             </div>
                                             <div class="form-group">
                                                 <label for="formGroupExampleInput">Last Name</label>
-                                                <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Example input">
+                                                <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Example input" required>
                                             </div>
                                             <div class="form-group">
                                                 <label for="formGroupExampleInput">Phone Number</label>
-                                                <input type="text" class="form-control" id="phone_no" name="phone_no" placeholder="Example input">
+                                                <input type="text" class="form-control" id="phone_no" name="phone_no" placeholder="Example input" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="formGroupExampleInput">Merchant Id</label>
+                                                <input type="text" class="form-control" id="phone_no" name="merchantId" placeholder="Example input" required>
                                             </div>
                                             <div class="form-group">
                                                 <label for="formGroupExampleInput">Tax Rate</label>
-                                                <input type="number" class="form-control" id="tax_rate" name="tax_rate" placeholder="Example input">
+                                                <input type="number" class="form-control" id="tax_rate" name="tax_rate" placeholder="Example input" required>
                                             </div>
                                             <div class="form-group">
                                                 <button class="btn " type="submit" style="margin-right:10px;background-color:#75d4bd">Save</button>
