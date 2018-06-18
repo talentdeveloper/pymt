@@ -26,13 +26,14 @@ CREATE TABLE `account` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `account_no` varchar(45) NOT NULL,
   `phone_no` varchar(20) DEFAULT NULL,
+  `company_name` varchar(255) DEFAULT NULL,
   `address` varchar(180) DEFAULT NULL,
   `street` varchar(45) DEFAULT NULL,
   `city` varchar(45) DEFAULT NULL,
   `state` varchar(45) DEFAULT NULL,
   `zip` varchar(12) DEFAULT NULL,
   `country` varchar(45) DEFAULT NULL,
-  `merchant_id` varchar(45) NOT NULL,
+  `merchant_id` varchar(255) NOT NULL,
   `device_settings` mediumtext,
   `tip_enabled` tinyint(4) DEFAULT NULL,
   `bar_tab` tinyint(4) DEFAULT NULL,
@@ -49,7 +50,7 @@ CREATE TABLE `account` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `merchant_id_UNIQUE` (`merchant_id`),
   UNIQUE KEY `account_no_UNIQUE` (`account_no`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -58,6 +59,7 @@ CREATE TABLE `account` (
 
 LOCK TABLES `account` WRITE;
 /*!40000 ALTER TABLE `account` DISABLE KEYS */;
+INSERT INTO `account` VALUES (1,'auth0|5b249d3d8763ef3569765d7b','234234','company name','ca',NULL,NULL,NULL,NULL,NULL,'693147b0-62c5-14c2-ddce-81f7d26bd52f',NULL,1,1,10.00,10000,1,1,1,1,1,1,1,1),(3,'auth0|5b249d3d8763ef3569765d7b1','234234','company name','ca',NULL,NULL,NULL,NULL,NULL,'693147b0-62c5-14c2-ddce-81f7d26bd52f2',NULL,1,1,21.00,10000,1,1,1,1,1,1,1,1),(4,'auth0|5b249fd9c4e1ce04c26ff84e','24234','123','adasdf',NULL,NULL,NULL,'32423',NULL,'def23768-a6cf-f289-6f66-7d144ce3c323',NULL,1,1,234.00,10000,1,1,1,1,1,1,1,1),(5,'auth0|5b24a69bb69286427c2b2a7c','1234567890','Pymt','comany address',NULL,NULL,NULL,'comapy zip',NULL,'b13878da-a5cb-1668-f72e-16b419a82337',NULL,1,1,80.00,10000,1,1,1,1,1,1,1,1),(6,'auth0|5b24a8308763ef3569765e76','1234567890','Company PYMT','company address',NULL,NULL,NULL,'aip',NULL,'9ab199dc-7bd3-adcc-2009-36d624420b92',NULL,1,1,123.00,10000,1,1,1,1,1,1,1,1),(7,'auth0|5b24a8aab69286427c2b2aaa','1231231231','company','address',NULL,NULL,NULL,'213123',NULL,'300fc390-6269-36b4-d858-53441abe4f41',NULL,1,1,32.00,10000,1,1,1,1,1,1,1,1);
 /*!40000 ALTER TABLE `account` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -633,7 +635,7 @@ CREATE TABLE `users` (
   `email` varchar(100) NOT NULL,
   `pin` int(10) NOT NULL,
   `role_id` int(5) DEFAULT NULL,
-  `auth0_user_id` varchar(100) DEFAULT NULL,
+  `auth0_user_id` varchar(255) DEFAULT NULL,
   `account_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `auth0_user_id_UNIQUE` (`auth0_user_id`),
@@ -641,7 +643,7 @@ CREATE TABLE `users` (
   KEY `user_role_id_role_idx` (`role_id`),
   CONSTRAINT `user_account_id_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE CASCADE,
   CONSTRAINT `user_role_id_role` FOREIGN KEY (`role_id`) REFERENCES `user_role` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -662,4 +664,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-06-14 23:08:36
+-- Dump completed on 2018-06-18 10:28:17
